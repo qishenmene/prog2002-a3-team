@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Students Helper | Event Details</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="event.js" defer></script>
+</head>
+
+<body>
+
+    <header>
+        <div class="header-content">
+            <a class="logo" href="index.html">
+                Students Helper
+            </a>
+
+            <nav>
+                <a href="index.html">
+                    Home
+                </a>
+
+                <a href="search.html">
+                    Search Events
+                </a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="container page-content">
+
+        <a class="back-link" id="backLink" href="index.html">
+            ← Back
+        </a>
+
+        <section class="event-details">
+
+            <div class="event-information">
+
+                <p class="small-title" id="eventCategory">
+                    EVENT
+                </p>
+
+                <h1 id="eventName">
+                    Event Details
+                </h1>
+
+                <div class="heading-line"></div>
+
+                <div class="detail-row">
+
+                    <div>
+                        <h3>Date</h3>
+
+                        <p id="eventDate">
+                            —
+                        </p>
+                    </div>
+
+                    <div>
+                        <h3>Time</h3>
+
+                        <p id="eventTime">
+                            —
+                        </p>
+                    </div>
+
+                </div>
+
+                <div>
+                    <h3>Location</h3>
+
+                    <p id="eventAddress">
+                        —
+                    </p>
+                </div>
+
+                <div>
+                    <h3>Purpose</h3>
+
+                    <p id="eventPurpose">
+                        —
+                    </p>
+                </div>
+
+                <div>
+                    <h3>Description</h3>
+
+                    <p id="eventDescription">
+                        —
+                    </p>
+                </div>
+
+            </div>
+
+            <aside class="event-summary">
+
+                <div class="summary-box">
+
+                    <p class="small-title">
+                        TICKET INFORMATION
+                    </p>
+
+                    <h3>
+                        Ticket Price
+                    </h3>
+
+                    <p class="large-value" id="eventTicketPrice">
+                        —
+                    </p>
+
+                </div>
+
+                <div class="summary-box">
+
+                    <p class="small-title">
+                        FUNDRAISING
+                    </p>
+
+                    <h3>
+                        Fundraising Progress
+                    </h3>
+
+                    <p>
+                        <strong id="eventGoalRaised">
+                            —
+                        </strong>
+
+                        raised of
+
+                        <strong id="eventGoalAmount">
+                            —
+                        </strong>
+                    </p>
+
+                    <div class="progress-background">
+
+                        <div class="progress-bar" id="progressBar"></div>
+
+                    </div>
+
+                </div>
+
+                <button class="button full-button" id="registerButton" type="button">
+                    Register
+                </button>
+
+            </aside>
+
+        </section>
+
+        <p id="eventError" class="error-message"></p>
+
+    </main>
+
+    <footer>
+        <p class="footer-name">
+            Students Helper
+        </p>
+
+        <p>
+            Supporting students through community fundraising.
+        </p>
+    </footer>
+
+</body>
+
+</html>

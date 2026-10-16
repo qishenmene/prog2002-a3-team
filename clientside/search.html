@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Students Helper | Search Events</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="search.js" defer></script>
+</head>
+
+<body>
+
+    <header>
+        <div class="header-content">
+            <a class="logo" href="index.html">
+                Students Helper
+            </a>
+
+            <nav>
+                <a href="index.html">
+                    Home
+                </a>
+
+                <a class="active" href="search.html">
+                    Search Events
+                </a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="container page-content">
+
+        <section class="page-heading">
+            <p class="small-title">
+                CHARITY EVENTS
+            </p>
+
+            <h1>
+                Find an Event
+            </h1>
+
+            <div class="heading-line"></div>
+
+            <p>
+                Search for charity events using one or more filters.
+            </p>
+        </section>
+
+        <section class="search-box">
+
+            <form id="searchForm">
+
+                <div class="search-fields">
+
+                    <div class="form-field">
+                        <label for="dateInput">
+                            Date
+                        </label>
+
+                        <input type="date" id="dateInput" name="date">
+                    </div>
+
+                    <div class="form-field">
+                        <label for="locationInput">
+                            Location
+                        </label>
+
+                        <input type="text" id="locationInput" name="location" placeholder="Enter a location">
+                    </div>
+
+                    <div class="form-field">
+                        <label for="categoryInput">
+                            Category
+                        </label>
+
+                        <select id="categoryInput" name="category">
+                            <option value="">
+                                All Categories
+                            </option>
+                        </select>
+                    </div>
+
+                </div>
+
+                <div class="form-buttons">
+
+                    <button class="button" type="submit">
+                        Search
+                    </button>
+
+                    <button class="button secondary-button" type="button" id="clearFilters">
+                        Clear Filters
+                    </button>
+
+                </div>
+
+            </form>
+
+            <p id="searchError" class="error-message"></p>
+
+        </section>
+
+        <section class="results-section">
+
+            <div class="section-heading">
+                <p class="small-title">
+                    RESULTS
+                </p>
+
+                <h2>
+                    Search Results
+                </h2>
+
+                <div class="heading-line"></div>
+            </div>
+
+            <div class="event-grid" id="searchResults"></div>
+
+        </section>
+
+    </main>
+
+    <footer>
+        <p class="footer-name">
+            Students Helper
+        </p>
+
+        <p>
+            Supporting students through community fundraising.
+        </p>
+    </footer>
+
+</body>
+
+</html>
