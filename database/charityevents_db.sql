@@ -115,4 +115,49 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
+--
+-- Table structure for table `registrations` (NEW for A3)
+-- Stores user registrations for charity events
+--
+
+DROP TABLE IF EXISTS `registrations`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `registrations` (
+  `registration_id` int NOT NULL AUTO_INCREMENT,
+  `event_id` int NOT NULL,
+  `user_name` varchar(100) NOT NULL,
+  `user_email` varchar(100) NOT NULL,
+  `user_phone` varchar(20) DEFAULT NULL,
+  `num_tickets` int NOT NULL DEFAULT '1',
+  `registration_date` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`registration_id`),
+  KEY `event_id` (`event_id`),
+  CONSTRAINT `registrations_ibfk_1` FOREIGN KEY (`event_id`) REFERENCES `events` (`event_id`) ON DELETE CASCADE,
+  UNIQUE KEY `unique_user_event` (`user_email`,`event_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=13 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `registrations` (12 sample records for A3)
+--
+
+LOCK TABLES `registrations` WRITE;
+/*!40000 ALTER TABLE `registrations` DISABLE KEYS */;
+INSERT INTO `registrations` VALUES 
+(1,1,'Alice Johnson','alice.j@email.com','0412345678',2,'2026-10-01 09:30:00'),
+(2,1,'Bob Smith','bob.smith@email.com','0423456789',1,'2026-10-02 14:15:00'),
+(3,2,'Carol White','carol.w@email.com','0434567890',4,'2026-10-03 10:00:00'),
+(4,2,'David Brown','david.b@email.com',NULL,2,'2026-10-04 16:45:00'),
+(5,3,'Emma Davis','emma.d@email.com','0456789012',1,'2026-10-05 11:20:00'),
+(6,3,'Frank Miller','frank.m@email.com','0467890123',3,'2026-10-06 13:30:00'),
+(7,4,'Grace Lee','grace.l@email.com','0478901234',2,'2026-10-07 15:00:00'),
+(8,4,'Henry Wilson','henry.w@email.com',NULL,1,'2026-10-08 09:45:00'),
+(9,5,'Ivy Chen','ivy.c@email.com','0489012345',2,'2026-10-09 12:00:00'),
+(10,6,'Jack Taylor','jack.t@email.com','0490123456',1,'2026-10-10 14:30:00'),
+(11,6,'Karen Moore','karen.m@email.com','0401234567',3,'2026-10-11 10:15:00'),
+(12,8,'Liam Anderson','liam.a@email.com','0412345670',2,'2026-10-12 16:00:00');
+/*!40000 ALTER TABLE `registrations` ENABLE KEYS */;
+UNLOCK TABLES;
+
 -- Dump completed on 2026-10-01 11:50:31
