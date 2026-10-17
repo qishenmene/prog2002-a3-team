@@ -1,9 +1,11 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
 /**
- * Event interface representing a charity event
+ * A charity event returned by the API.
+ * The extra fields (category_name, tickets_sold) are produced by the SQL joins
+ * and sub-selects in api-controller.js.
  */
 export interface Event {
   event_id: number;
@@ -19,84 +21,151 @@ export interface Event {
   event_availability: string;
   event_category_id: number;
   event_organisation_id: number;
+  latitude?: number | null;
+  longitude?: number | null;
   category_name?: string;
   organisation_name?: string;
+  tickets_sold?: number;
+  registration_count?: number;
+  registrations?: Registration[];
 }
 
 /**
- * Registration interface for event sign-ups
+ * One ticket purchase for an event.
  */
 export interface Registration {
   registration_id?: number;
   event_id: number;
   user_name: string;
   user_email: string;
-  user_phone?: string;
+  user_phone?: string | null;
   num_tickets: number;
   registration_date?: string;
 }
 
 /**
- * API Service for communicating with the backend
- * Handles all HTTP requests to the charity events API
+ * One day of the Open-Meteo forecast.
+ */
+export interface WeatherDay {
+  date: string;
+  weather_code: number;
+  description: string;
+  icon: string;
+  temperature_max: number;
+  temperature_min: number;
+}
+
+/**
+ * Normalised forecast returned by GET /api/events/:id/weather.
+ */
+export interface WeatherForecast {
+  latitude: number;
+  longitude: number;
+  timezone: string | null;
+  location?: string;
+  days: WeatherDay[];
+  source: string;
+  cached?: boolean;
+}
+
+/**
+ * Search filters used by the search page. Every value is optional.
+ */
+export interface SearchFilters {
+  date?: string;
+  location?: string;
+  category?: string;
+}
+
+/**
+ * Handles every HTTP call the client website makes to the Express API.
+ *
+ * The base URL is relative ("/api") so the same build works locally through
+ * the Angular dev-server proxy and on cPanel where the API is served from the
+ * same host. See proxy.conf.json.
  */
 @Injectable({
   providedIn: 'root'
 })
 export class ApiService {
-  private apiUrl = 'http://localhost:8080/api';
+  private readonly apiUrl = '/api';
 
-  constructor(private http: HttpClient) { }
+  constructor(private http: HttpClient) {}
 
   /**
-   * Get all upcoming and active events
-   * @returns Observable of Event array
+   * Upcoming, available events for the home page.
    */
   getEvents(): Observable<Event[]> {
     return this.http.get<Event[]>(`${this.apiUrl}/events`);
   }
 
   /**
-   * Get a single event by ID
-   * @param id The event ID
-   * @returns Observable of Event
+   * A single event together with its full registration list.
    */
   getEvent(id: number): Observable<Event> {
     return this.http.get<Event>(`${this.apiUrl}/events/${id}`);
   }
 
   /**
-   * Get all event categories
-   * @returns Observable of categories array
+   * All event categories for the search filter.
    */
-  getCategories(): Observable<any[]> {
-    return this.http.get<any[]>(`${this.apiUrl}/categories`);
+  getCategories(): Observable<{ category_id: number; category_name: string }[]> {
+    return this.http.get<{ category_id: number; category_name: string }[]>(
+      `${this.apiUrl}/categories`
+    );
   }
 
   /**
-   * Search events with filters
-   * @param params Search parameters (date, location, category)
-   * @returns Observable of Event array
+   * Filtered event search.
    */
-  searchEvents(params: any): Observable<Event[]> {
-    return this.http.get<Event[]>(`${this.apiUrl}/search`, { params });
+  searchEvents(filters: SearchFilters): Observable<Event[]> {
+    let params = new HttpParams();
+
+    if (filters.date) {
+      params = params.set('date', filters.date);
+    }
+    if (filters.location) {
+      params = params.set('location', filters.location);
+    }
+    if (filters.category) {
+      params = params.set('category', filters.category);
+    }
+
+    return this.http.get<Event[]>(`${this.apiUrl}/events/search`, { params });
   }
 
   /**
-   * Get registrations for a specific event
-   * @param eventId The event ID
-   * @returns Observable of Registration array
+   * Registrations of one event, newest first.
    */
   getEventRegistrations(eventId: number): Observable<Registration[]> {
-    return this.http.get<Registration[]>(`${this.apiUrl}/events/${eventId}/registrations`);
+    return this.http.get<Registration[]>(
+      `${this.apiUrl}/events/${eventId}/registrations`
+    );
   }
 
   /**
-   * Submit a new registration
-   * @param registration The registration data
-   * @returns Observable of the created registration
+   * Creates a registration.
    */
-  submitRegistration(registration: Registration): Observable<any> {
-    return this.http.post<any>(`${this.apiUrl}/registrations`, registration);
+  submitRegistration(registration: Registration): Observable<{
+    message: string;
+    registration_id: number;
+    tickets: number;
+    revenue_added: number;
+  }> {
+    return this.http.post<{
+      message: string;
+      registration_id: number;
+      tickets: number;
+      revenue_added: number;
+    }>(`${this.apiUrl}/registrations`, registration);
+  }
+
+  /**
+   * Three day weather forecast for the event location.
+   */
+  getEventWeather(eventId: number): Observable<WeatherForecast> {
+    return this.http.get<WeatherForecast>(
+      `${this.apiUrl}/events/${eventId}/weather`
+    );
   }
 }

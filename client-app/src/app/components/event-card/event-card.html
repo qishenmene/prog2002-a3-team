@@ -1,0 +1,23 @@
+<article class="event-card">
+  <div class="date-badge">
+    <span class="day">{{ getDay() }}</span>
+    <span class="month">{{ getMonth() }}</span>
+  </div>
+
+  <div class="card-body">
+    <span class="category">{{ event().category_name || 'General' }}</span>
+
+    <h3>{{ event().event_name }}</h3>
+
+    <p class="meta">📍 {{ event().event_address }}</p>
+    <p class="meta">🕐 {{ getTime() }}</p>
+
+    <p class="description">{{ getSummary() }}</p>
+
+    <div class="card-footer">
+      <span class="price" [class.free]="isFree()">{{ getPrice() }}</span>
+
+      <a class="btn" [routerLink]="['/event', event().event_id]">View Details</a>
+    </div>
+  </div>
+</article>
