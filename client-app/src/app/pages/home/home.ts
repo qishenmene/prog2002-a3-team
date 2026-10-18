@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { ApiService, Event } from '../../services/api.service';
@@ -197,7 +197,7 @@ export class Home implements OnInit {
   loading = true;
   error: string | null = null;
 
-  constructor(private apiService: ApiService) {}
+  constructor(private apiService: ApiService, private cdr: ChangeDetectorRef) {}
 
   ngOnInit(): void {
     this.loadEvents();
@@ -214,10 +214,12 @@ export class Home implements OnInit {
       next: (data) => {
         this.events = data;
         this.loading = false;
+        this.cdr.detectChanges();
       },
       error: (err) => {
         this.error = 'Failed to load events. Please try again later.';
         this.loading = false;
+        this.cdr.detectChanges();
         console.error('Error loading events:', err);
       }
     });
