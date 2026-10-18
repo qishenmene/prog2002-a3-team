@@ -155,6 +155,7 @@ Then confirm the event endpoints end to end:
 | --- | --- |
 | `GET /api/events/:id` | `200` with event fields and a `registrations` array ordered newest first; `[]` when none exist |
 | `GET /api/admin/events/:id` | `200` for an existing event, including past or suspended events |
+| `POST /api/registrations` | `201` for valid input and an available event; `400` for invalid input or a duplicate registration, `404` for a missing event, `409` for an unavailable event |
 | `POST /api/events` | `201` with the new `event_id` |
 | `PUT /api/events/:id` | `200` |
 | `DELETE /api/events/:id` | `200` when the event has no registrations |

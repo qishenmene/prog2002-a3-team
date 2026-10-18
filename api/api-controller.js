@@ -362,50 +362,84 @@ router.delete("/events/:id", function (req, res) {
 });
 
 /**
- * POST /api/registrations - Register a user for an event (A3 NEW)
+ * Registers a visitor for an available event after validating the request body.
+ * Trims contact fields and requires a positive integer event ID and ticket count.
+ * The guarded insert rechecks availability; the database's unique constraint
+ * prevents duplicate registrations, including simultaneous requests.
  *
- * @param {Object} req The HTTP request object from the client with registration data in body.
- * @param {Object} res The HTTP response object used to send data back to the client.
+ * @param {Object} req - The request containing event and visitor details in its body.
+ * @param {Object} res - The response used to send confirmation or a validation error.
+ * @returns {void} Sends 201 on success, 400 for invalid or duplicate input,
+ * 404 for a missing event, 409 for an unavailable event, or 500 for a database error.
  */
-router.post("/registrations", function (req, res) {
-    const { event_id, user_name, user_email, user_phone, num_tickets } = req.body;
+function createRegistration(req, res) {
+    const { event_id, user_name, user_email, user_phone, num_tickets } = req.body || {};
+    const eventId = ["number", "string"].includes(typeof event_id) ? Number(event_id) : NaN;
+    const tickets = ["number", "string"].includes(typeof num_tickets) ? Number(num_tickets) : NaN;
 
-    // Validation
-    if (!event_id || !user_name || !user_email || !num_tickets) {
-        return res.status(400).json({
-            message: "Missing required fields: event_id, user_name, user_email, num_tickets"
-        });
+    if (!Number.isSafeInteger(eventId) || eventId < 1) {
+        res.status(400).json({ message: "Event ID must be a positive integer." });
+        return;
+    }
+    if (typeof user_name !== "string" || !user_name.trim() || user_name.trim().length > 100) {
+        res.status(400).json({ message: "Please enter a name between 1 and 100 characters." });
+        return;
+    }
+    const emailPattern = /^(?=.{1,100}$)(?=.{1,64}@)[a-zA-Z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-zA-Z0-9!#$%&'*+/=?^_`{|}~-]+)*@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)+$/;
+    if (typeof user_email !== "string" || !emailPattern.test(user_email.trim())) {
+        res.status(400).json({ message: "Please enter a valid email address (maximum 100 characters)." });
+        return;
+    }
+    if (!Number.isInteger(tickets) || tickets < 1 || tickets > 2147483647) {
+        res.status(400).json({ message: "The number of tickets must be a positive whole number." });
+        return;
+    }
+    if (user_phone != null && (typeof user_phone !== "string" || user_phone.trim().length > 20)) {
+        res.status(400).json({ message: "Phone number must be at most 20 characters." });
+        return;
     }
 
-    // Check if user already registered for this event
+    const name = user_name.trim();
+    const email = user_email.trim();
+    const phone = user_phone == null ? null : user_phone.trim() || null;
+
     connectionObj.query(
-        "SELECT * FROM registrations WHERE event_id = ? AND user_email = ?",
-        [event_id, user_email],
-        function (err, results) {
-            if (err) {
-                console.log(err);
-                return res.status(500).json({
-                    message: "Failed to check existing registration. Please try again later."
-                });
+        "SELECT event_availability FROM events WHERE event_id = ?",
+        [eventId],
+        function (eventError, events) {
+            if (eventError) {
+                console.error(eventError);
+                res.status(500).json({ message: "Failed to check event availability. Please try again later." });
+                return;
+            }
+            if (events.length === 0) {
+                res.status(404).json({ message: "Event not found." });
+                return;
+            }
+            if (events[0].event_availability !== "Available") {
+                res.status(409).json({ message: "This event is not available for registration." });
+                return;
             }
 
-            if (results.length > 0) {
-                return res.status(400).json({
-                    message: "You have already registered for this event."
-                });
-            }
-
-            // Insert new registration
-            const sql = "INSERT INTO registrations (event_id, user_name, user_email, user_phone, num_tickets) VALUES (?, ?, ?, ?, ?)";
+            const sql = `INSERT INTO registrations (event_id, user_name, user_email, user_phone, num_tickets)
+                         SELECT event_id, ?, ?, ?, ? FROM events
+                         WHERE event_id = ? AND event_availability = 'Available'`;
             connectionObj.query(
                 sql,
-                [event_id, user_name, user_email, user_phone || null, num_tickets],
-                function (err, result) {
-                    if (err) {
-                        console.log(err);
-                        return res.status(500).json({
-                            message: "Failed to submit registration. Please try again later."
-                        });
+                [name, email, phone, tickets, eventId],
+                function (insertError, result) {
+                    if (insertError) {
+                        if (insertError.code === "ER_DUP_ENTRY") {
+                            res.status(400).json({ message: "You have already registered for this event." });
+                            return;
+                        }
+                        console.error(insertError);
+                        res.status(500).json({ message: "Failed to submit registration. Please try again later." });
+                        return;
+                    }
+                    if (result.affectedRows === 0) {
+                        res.status(409).json({ message: "This event is not available for registration." });
+                        return;
                     }
                     res.status(201).json({
                         message: "Registration submitted successfully!",
@@ -415,6 +449,8 @@ router.post("/registrations", function (req, res) {
             );
         }
     );
-});
+}
+
+router.post("/registrations", createRegistration);
 
 module.exports = router;
