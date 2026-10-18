@@ -1,0 +1,21 @@
+{
+  "sourceHead": "d9981164dc19ed0a5b0e2df45badd06f636b0871",
+  "preparedAtUTC": "2026-10-18T15:35:03.495Z",
+  "contributorAccount": "pwqcat",
+  "evidenceType": "Verification data",
+  "applicationSourceChanged": false,
+  "checksRecordedAgainst": "Local isolated runtime and read-only school deployment",
+  "recordsIncludeKnownFailures": true,
+  "files": [
+    {
+      "path": "comment-inventory.json",
+      "bytes": 33659,
+      "sha256": "ad239635531d4f50f7b7fb7208a4fd5096504eb77cca567be1eaca9682455c98"
+    },
+    {
+      "path": "runtime-checks.json",
+      "bytes": 3360,
+      "sha256": "6c71c5fa436aef821804f6d9b642f1c05e9e836cb3f49dd389f65ee3a366e466"
+    }
+  ]
+}

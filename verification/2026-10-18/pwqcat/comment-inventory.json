@@ -1,0 +1,1290 @@
+{
+  "sourceHead": "d9981164dc19ed0a5b0e2df45badd06f636b0871",
+  "collectedAtUTC": "2026-10-18T15:35:03.429Z",
+  "tool": {
+    "name": "TypeScript compiler AST",
+    "version": "6.0.3"
+  },
+  "scope": "Source metadata inventory only; not a JSDoc/TypeDoc generation result or a grading decision.",
+  "files": [
+    {
+      "file": "api/api-controller.js",
+      "sha256": "c2f54d71aa551a253338510c11f762837bd32aca2282912e024278ac2ef3c7be",
+      "fileTagPresent": false,
+      "units": [
+        {
+          "kind": "HttpRouteCall",
+          "name": "GET /events",
+          "declarationLine": 24,
+          "callDocumentation": {
+            "documentationBlockPresent": true,
+            "tags": [
+              {
+                "tag": "param",
+                "parameter": "req"
+              },
+              {
+                "tag": "param",
+                "parameter": "res"
+              }
+            ]
+          },
+          "handlerDocumentation": {
+            "documentationBlockPresent": false,
+            "tags": []
+          },
+          "handlerName": null
+        },
+        {
+          "kind": "HttpRouteCall",
+          "name": "GET /categories",
+          "declarationLine": 45,
+          "callDocumentation": {
+            "documentationBlockPresent": true,
+            "tags": [
+              {
+                "tag": "param",
+                "parameter": "req"
+              },
+              {
+                "tag": "param",
+                "parameter": "res"
+              }
+            ]
+          },
+          "handlerDocumentation": {
+            "documentationBlockPresent": false,
+            "tags": []
+          },
+          "handlerName": null
+        },
+        {
+          "kind": "HttpRouteCall",
+          "name": "GET /events/search",
+          "declarationLine": 66,
+          "callDocumentation": {
+            "documentationBlockPresent": true,
+            "tags": [
+              {
+                "tag": "param",
+                "parameter": "req"
+              },
+              {
+                "tag": "param",
+                "parameter": "res"
+              }
+            ]
+          },
+          "handlerDocumentation": {
+            "documentationBlockPresent": false,
+            "tags": []
+          },
+          "handlerName": null
+        },
+        {
+          "kind": "HttpRouteCall",
+          "name": "GET /events/all",
+          "declarationLine": 109,
+          "callDocumentation": {
+            "documentationBlockPresent": true,
+            "tags": []
+          },
+          "handlerDocumentation": {
+            "documentationBlockPresent": false,
+            "tags": []
+          },
+          "handlerName": null
+        },
+        {
+          "kind": "HttpRouteCall",
+          "name": "GET /events/:id",
+          "declarationLine": 132,
+          "callDocumentation": {
+            "documentationBlockPresent": true,
+            "tags": [
+              {
+                "tag": "param",
+                "parameter": "req"
+              },
+              {
+                "tag": "param",
+                "parameter": "res"
+              }
+            ]
+          },
+          "handlerDocumentation": {
+            "documentationBlockPresent": false,
+            "tags": []
+          },
+          "handlerName": null
+        },
+        {
+          "kind": "HttpRouteCall",
+          "name": "GET /events/:id/registrations",
+          "declarationLine": 161,
+          "callDocumentation": {
+            "documentationBlockPresent": true,
+            "tags": [
+              {
+                "tag": "param",
+                "parameter": "req"
+              },
+              {
+                "tag": "param",
+                "parameter": "res"
+              }
+            ]
+          },
+          "handlerDocumentation": {
+            "documentationBlockPresent": false,
+            "tags": []
+          },
+          "handlerName": null
+        },
+        {
+          "kind": "HttpRouteCall",
+          "name": "POST /events",
+          "declarationLine": 184,
+          "callDocumentation": {
+            "documentationBlockPresent": true,
+            "tags": [
+              {
+                "tag": "param",
+                "parameter": "req"
+              },
+              {
+                "tag": "param",
+                "parameter": "res"
+              }
+            ]
+          },
+          "handlerDocumentation": {
+            "documentationBlockPresent": false,
+            "tags": []
+          },
+          "handlerName": null
+        },
+        {
+          "kind": "HttpRouteCall",
+          "name": "PUT /events/:id",
+          "declarationLine": 221,
+          "callDocumentation": {
+            "documentationBlockPresent": true,
+            "tags": [
+              {
+                "tag": "param",
+                "parameter": "req"
+              },
+              {
+                "tag": "param",
+                "parameter": "res"
+              }
+            ]
+          },
+          "handlerDocumentation": {
+            "documentationBlockPresent": false,
+            "tags": []
+          },
+          "handlerName": null
+        },
+        {
+          "kind": "HttpRouteCall",
+          "name": "DELETE /events/:id",
+          "declarationLine": 256,
+          "callDocumentation": {
+            "documentationBlockPresent": true,
+            "tags": [
+              {
+                "tag": "param",
+                "parameter": "req"
+              },
+              {
+                "tag": "param",
+                "parameter": "res"
+              }
+            ]
+          },
+          "handlerDocumentation": {
+            "documentationBlockPresent": false,
+            "tags": []
+          },
+          "handlerName": null
+        },
+        {
+          "kind": "HttpRouteCall",
+          "name": "POST /registrations",
+          "declarationLine": 308,
+          "callDocumentation": {
+            "documentationBlockPresent": true,
+            "tags": [
+              {
+                "tag": "param",
+                "parameter": "req"
+              },
+              {
+                "tag": "param",
+                "parameter": "res"
+              }
+            ]
+          },
+          "handlerDocumentation": {
+            "documentationBlockPresent": false,
+            "tags": []
+          },
+          "handlerName": null
+        }
+      ]
+    },
+    {
+      "file": "api/db-details.example.js",
+      "sha256": "a88b7c9f8e3f52d07ce9151504fc3b990fbef3f2d38331f49b98d78093834adc",
+      "fileTagPresent": false,
+      "units": []
+    },
+    {
+      "file": "api/event_db.js",
+      "sha256": "f1a9b6c7ed2613b65d69416e126e1393858a70a5e357b87496c2b5cf50f9945a",
+      "fileTagPresent": false,
+      "units": [
+        {
+          "kind": "FunctionDeclaration",
+          "name": "getConnection",
+          "declarationLine": 25,
+          "parameters": [],
+          "documentationBlockPresent": true,
+          "tags": [
+            {
+              "tag": "returns",
+              "parameter": null
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "file": "api/server.js",
+      "sha256": "8494824ce83e685ccf22a3f92901917e2050dd4c82cc1f7973b8b72bed086eb2",
+      "fileTagPresent": false,
+      "units": []
+    },
+    {
+      "file": "client-app/src/app/app.config.ts",
+      "sha256": "259290b7b11838874f91ce188f815413f6d2d97b34be6cf9fbb7f771b4123d26",
+      "fileTagPresent": false,
+      "units": []
+    },
+    {
+      "file": "client-app/src/app/app.routes.ts",
+      "sha256": "6f13a82ff2cfe93fbe2c4394421d23020e1dd2ce799a147152c33f8a2b739689",
+      "fileTagPresent": false,
+      "units": []
+    },
+    {
+      "file": "client-app/src/app/app.ts",
+      "sha256": "83d41f867af37d5e87a406b2309686f34b7d810d1638c9ecb3ee8b33bfd1b74a",
+      "fileTagPresent": false,
+      "units": []
+    },
+    {
+      "file": "client-app/src/app/components/event-card/event-card.ts",
+      "sha256": "c8e912ad70dea928cd00f9cdf748d73c395dc81d3940b4db141a7333cb88c3ab",
+      "fileTagPresent": false,
+      "units": [
+        {
+          "kind": "MethodDeclaration",
+          "name": "getDay",
+          "declarationLine": 33,
+          "parameters": [],
+          "documentationBlockPresent": true,
+          "tags": []
+        },
+        {
+          "kind": "MethodDeclaration",
+          "name": "getMonth",
+          "declarationLine": 40,
+          "parameters": [],
+          "documentationBlockPresent": true,
+          "tags": []
+        },
+        {
+          "kind": "MethodDeclaration",
+          "name": "getTime",
+          "declarationLine": 47,
+          "parameters": [],
+          "documentationBlockPresent": true,
+          "tags": []
+        },
+        {
+          "kind": "MethodDeclaration",
+          "name": "getSummary",
+          "declarationLine": 54,
+          "parameters": [],
+          "documentationBlockPresent": true,
+          "tags": []
+        },
+        {
+          "kind": "MethodDeclaration",
+          "name": "getPrice",
+          "declarationLine": 61,
+          "parameters": [],
+          "documentationBlockPresent": true,
+          "tags": []
+        },
+        {
+          "kind": "MethodDeclaration",
+          "name": "isFree",
+          "declarationLine": 70,
+          "parameters": [],
+          "documentationBlockPresent": true,
+          "tags": []
+        }
+      ]
+    },
+    {
+      "file": "client-app/src/app/components/footer/footer.ts",
+      "sha256": "b9e25c7583799f4bc8ae1016ac953576ed1984e7749dffbcc1590fbd43a1b8e9",
+      "fileTagPresent": false,
+      "units": []
+    },
+    {
+      "file": "client-app/src/app/components/header/header.ts",
+      "sha256": "24882662767d69e16ec1ff9f2ded688249de7cb3b11adf6e3625a020f32aab7a",
+      "fileTagPresent": false,
+      "units": []
+    },
+    {
+      "file": "client-app/src/app/components/nav/nav.ts",
+      "sha256": "878b4f753d1d0060b91777ae739838786d8dc3e26756057b1c24fbfe856a092d",
+      "fileTagPresent": false,
+      "units": []
+    },
+    {
+      "file": "client-app/src/app/pages/event-detail/event-detail.ts",
+      "sha256": "edce68e39d5a2e1c8f225c6a6cc7c40ddf72f3753b31a86701ec32c311bdf2e6",
+      "fileTagPresent": false,
+      "units": [
+        {
+          "kind": "Constructor",
+          "name": "constructor",
+          "declarationLine": 293,
+          "parameters": [
+            "route",
+            "apiService",
+            "cdr"
+          ],
+          "documentationBlockPresent": false,
+          "tags": []
+        },
+        {
+          "kind": "MethodDeclaration",
+          "name": "ngOnInit",
+          "declarationLine": 302,
+          "parameters": [],
+          "documentationBlockPresent": true,
+          "tags": []
+        },
+        {
+          "kind": "MethodDeclaration",
+          "name": "loadRegistrations",
+          "declarationLine": 332,
+          "parameters": [
+            "eventId"
+          ],
+          "documentationBlockPresent": true,
+          "tags": [
+            {
+              "tag": "param",
+              "parameter": "eventId"
+            }
+          ]
+        },
+        {
+          "kind": "MethodDeclaration",
+          "name": "getProgressPercent",
+          "declarationLine": 345,
+          "parameters": [],
+          "documentationBlockPresent": true,
+          "tags": []
+        },
+        {
+          "kind": "MethodDeclaration",
+          "name": "getDay",
+          "declarationLine": 354,
+          "parameters": [
+            "dateString"
+          ],
+          "documentationBlockPresent": true,
+          "tags": []
+        },
+        {
+          "kind": "MethodDeclaration",
+          "name": "getMonth",
+          "declarationLine": 361,
+          "parameters": [
+            "dateString"
+          ],
+          "documentationBlockPresent": true,
+          "tags": []
+        },
+        {
+          "kind": "MethodDeclaration",
+          "name": "formatDate",
+          "declarationLine": 369,
+          "parameters": [
+            "dateString"
+          ],
+          "documentationBlockPresent": true,
+          "tags": []
+        },
+        {
+          "kind": "MethodDeclaration",
+          "name": "formatTime",
+          "declarationLine": 378,
+          "parameters": [
+            "timeString"
+          ],
+          "documentationBlockPresent": true,
+          "tags": []
+        }
+      ]
+    },
+    {
+      "file": "client-app/src/app/pages/home/home.ts",
+      "sha256": "970c3dcefd6c0b748a3dd4a6d2f3962f66057016d7a857f3eb39e2dda5cc660b",
+      "fileTagPresent": false,
+      "units": [
+        {
+          "kind": "Constructor",
+          "name": "constructor",
+          "declarationLine": 200,
+          "parameters": [
+            "apiService",
+            "cdr"
+          ],
+          "documentationBlockPresent": false,
+          "tags": []
+        },
+        {
+          "kind": "MethodDeclaration",
+          "name": "ngOnInit",
+          "declarationLine": 202,
+          "parameters": [],
+          "documentationBlockPresent": false,
+          "tags": []
+        },
+        {
+          "kind": "MethodDeclaration",
+          "name": "loadEvents",
+          "declarationLine": 209,
+          "parameters": [],
+          "documentationBlockPresent": true,
+          "tags": []
+        },
+        {
+          "kind": "MethodDeclaration",
+          "name": "getDay",
+          "declarationLine": 231,
+          "parameters": [
+            "dateString"
+          ],
+          "documentationBlockPresent": true,
+          "tags": []
+        },
+        {
+          "kind": "MethodDeclaration",
+          "name": "getMonth",
+          "declarationLine": 238,
+          "parameters": [
+            "dateString"
+          ],
+          "documentationBlockPresent": true,
+          "tags": []
+        },
+        {
+          "kind": "MethodDeclaration",
+          "name": "formatTime",
+          "declarationLine": 246,
+          "parameters": [
+            "timeString"
+          ],
+          "documentationBlockPresent": true,
+          "tags": []
+        },
+        {
+          "kind": "MethodDeclaration",
+          "name": "truncateDescription",
+          "declarationLine": 258,
+          "parameters": [
+            "description"
+          ],
+          "documentationBlockPresent": true,
+          "tags": []
+        }
+      ]
+    },
+    {
+      "file": "client-app/src/app/pages/register/register.ts",
+      "sha256": "401624e5766be5934662090db86a522e54d16453819485fe3f6f213c57d757b9",
+      "fileTagPresent": false,
+      "units": [
+        {
+          "kind": "Constructor",
+          "name": "constructor",
+          "declarationLine": 345,
+          "parameters": [
+            "route",
+            "apiService",
+            "cdr"
+          ],
+          "documentationBlockPresent": false,
+          "tags": []
+        },
+        {
+          "kind": "MethodDeclaration",
+          "name": "ngOnInit",
+          "declarationLine": 354,
+          "parameters": [],
+          "documentationBlockPresent": true,
+          "tags": []
+        },
+        {
+          "kind": "MethodDeclaration",
+          "name": "submit",
+          "declarationLine": 383,
+          "parameters": [],
+          "documentationBlockPresent": true,
+          "tags": []
+        },
+        {
+          "kind": "MethodDeclaration",
+          "name": "getDay",
+          "declarationLine": 413,
+          "parameters": [
+            "dateString"
+          ],
+          "documentationBlockPresent": true,
+          "tags": []
+        },
+        {
+          "kind": "MethodDeclaration",
+          "name": "getMonth",
+          "declarationLine": 420,
+          "parameters": [
+            "dateString"
+          ],
+          "documentationBlockPresent": true,
+          "tags": []
+        },
+        {
+          "kind": "MethodDeclaration",
+          "name": "formatDate",
+          "declarationLine": 428,
+          "parameters": [
+            "dateString"
+          ],
+          "documentationBlockPresent": true,
+          "tags": []
+        },
+        {
+          "kind": "MethodDeclaration",
+          "name": "formatTime",
+          "declarationLine": 437,
+          "parameters": [
+            "timeString"
+          ],
+          "documentationBlockPresent": true,
+          "tags": []
+        }
+      ]
+    },
+    {
+      "file": "client-app/src/app/pages/search/search.ts",
+      "sha256": "3d9bd23dda94e3d49c4ec6ee221e7d4cdf34e9acbfb444c95d89d4d3c3281dc7",
+      "fileTagPresent": false,
+      "units": [
+        {
+          "kind": "Constructor",
+          "name": "constructor",
+          "declarationLine": 308,
+          "parameters": [
+            "apiService",
+            "cdr",
+            "route"
+          ],
+          "documentationBlockPresent": false,
+          "tags": []
+        },
+        {
+          "kind": "MethodDeclaration",
+          "name": "ngOnInit",
+          "declarationLine": 315,
+          "parameters": [],
+          "documentationBlockPresent": true,
+          "tags": []
+        },
+        {
+          "kind": "MethodDeclaration",
+          "name": "search",
+          "declarationLine": 336,
+          "parameters": [],
+          "documentationBlockPresent": true,
+          "tags": []
+        },
+        {
+          "kind": "MethodDeclaration",
+          "name": "clear",
+          "declarationLine": 364,
+          "parameters": [],
+          "documentationBlockPresent": true,
+          "tags": []
+        },
+        {
+          "kind": "MethodDeclaration",
+          "name": "getDay",
+          "declarationLine": 374,
+          "parameters": [
+            "dateString"
+          ],
+          "documentationBlockPresent": true,
+          "tags": []
+        },
+        {
+          "kind": "MethodDeclaration",
+          "name": "getMonth",
+          "declarationLine": 381,
+          "parameters": [
+            "dateString"
+          ],
+          "documentationBlockPresent": true,
+          "tags": []
+        },
+        {
+          "kind": "MethodDeclaration",
+          "name": "formatTime",
+          "declarationLine": 389,
+          "parameters": [
+            "timeString"
+          ],
+          "documentationBlockPresent": true,
+          "tags": []
+        },
+        {
+          "kind": "MethodDeclaration",
+          "name": "truncateDescription",
+          "declarationLine": 401,
+          "parameters": [
+            "description"
+          ],
+          "documentationBlockPresent": true,
+          "tags": []
+        }
+      ]
+    },
+    {
+      "file": "client-app/src/app/services/api.service.ts",
+      "sha256": "07daf9e0b3c6b6bbf7076fc77d46c169c9ffe67745193a190ef812ee1639b406",
+      "fileTagPresent": false,
+      "units": [
+        {
+          "kind": "Constructor",
+          "name": "constructor",
+          "declarationLine": 51,
+          "parameters": [
+            "http"
+          ],
+          "documentationBlockPresent": false,
+          "tags": []
+        },
+        {
+          "kind": "MethodDeclaration",
+          "name": "getEvents",
+          "declarationLine": 57,
+          "parameters": [],
+          "documentationBlockPresent": true,
+          "tags": [
+            {
+              "tag": "returns",
+              "parameter": null
+            }
+          ]
+        },
+        {
+          "kind": "MethodDeclaration",
+          "name": "getEvent",
+          "declarationLine": 66,
+          "parameters": [
+            "id"
+          ],
+          "documentationBlockPresent": true,
+          "tags": [
+            {
+              "tag": "param",
+              "parameter": "id"
+            },
+            {
+              "tag": "returns",
+              "parameter": null
+            }
+          ]
+        },
+        {
+          "kind": "MethodDeclaration",
+          "name": "getCategories",
+          "declarationLine": 74,
+          "parameters": [],
+          "documentationBlockPresent": true,
+          "tags": [
+            {
+              "tag": "returns",
+              "parameter": null
+            }
+          ]
+        },
+        {
+          "kind": "MethodDeclaration",
+          "name": "searchEvents",
+          "declarationLine": 83,
+          "parameters": [
+            "params"
+          ],
+          "documentationBlockPresent": true,
+          "tags": [
+            {
+              "tag": "param",
+              "parameter": "params"
+            },
+            {
+              "tag": "returns",
+              "parameter": null
+            }
+          ]
+        },
+        {
+          "kind": "MethodDeclaration",
+          "name": "getEventRegistrations",
+          "declarationLine": 92,
+          "parameters": [
+            "eventId"
+          ],
+          "documentationBlockPresent": true,
+          "tags": [
+            {
+              "tag": "param",
+              "parameter": "eventId"
+            },
+            {
+              "tag": "returns",
+              "parameter": null
+            }
+          ]
+        },
+        {
+          "kind": "MethodDeclaration",
+          "name": "submitRegistration",
+          "declarationLine": 101,
+          "parameters": [
+            "registration"
+          ],
+          "documentationBlockPresent": true,
+          "tags": [
+            {
+              "tag": "param",
+              "parameter": "registration"
+            },
+            {
+              "tag": "returns",
+              "parameter": null
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "file": "client-app/src/app/shared/format.ts",
+      "sha256": "49e15723d57f528e885a7d3a8b879660a01318bf65bf04a5eb01066215c8bf58",
+      "fileTagPresent": false,
+      "units": [
+        {
+          "kind": "FunctionDeclaration",
+          "name": "parseSqlDate",
+          "declarationLine": 25,
+          "parameters": [
+            "value"
+          ],
+          "documentationBlockPresent": true,
+          "tags": [
+            {
+              "tag": "param",
+              "parameter": "value"
+            },
+            {
+              "tag": "returns",
+              "parameter": null
+            }
+          ]
+        },
+        {
+          "kind": "FunctionDeclaration",
+          "name": "dayOfMonth",
+          "declarationLine": 51,
+          "parameters": [
+            "value"
+          ],
+          "documentationBlockPresent": true,
+          "tags": []
+        },
+        {
+          "kind": "FunctionDeclaration",
+          "name": "monthAbbr",
+          "declarationLine": 59,
+          "parameters": [
+            "value"
+          ],
+          "documentationBlockPresent": true,
+          "tags": []
+        },
+        {
+          "kind": "FunctionDeclaration",
+          "name": "formatDateLong",
+          "declarationLine": 67,
+          "parameters": [
+            "value"
+          ],
+          "documentationBlockPresent": true,
+          "tags": []
+        },
+        {
+          "kind": "FunctionDeclaration",
+          "name": "formatDateShort",
+          "declarationLine": 81,
+          "parameters": [
+            "value"
+          ],
+          "documentationBlockPresent": true,
+          "tags": []
+        },
+        {
+          "kind": "FunctionDeclaration",
+          "name": "formatTime",
+          "declarationLine": 95,
+          "parameters": [
+            "value"
+          ],
+          "documentationBlockPresent": true,
+          "tags": []
+        },
+        {
+          "kind": "FunctionDeclaration",
+          "name": "formatDateTime",
+          "declarationLine": 117,
+          "parameters": [
+            "value"
+          ],
+          "documentationBlockPresent": true,
+          "tags": []
+        },
+        {
+          "kind": "FunctionDeclaration",
+          "name": "truncate",
+          "declarationLine": 136,
+          "parameters": [
+            "text",
+            "maxLength"
+          ],
+          "documentationBlockPresent": true,
+          "tags": []
+        },
+        {
+          "kind": "FunctionDeclaration",
+          "name": "formatMoney",
+          "declarationLine": 147,
+          "parameters": [
+            "value"
+          ],
+          "documentationBlockPresent": true,
+          "tags": []
+        }
+      ]
+    },
+    {
+      "file": "client-app/src/app/shared/http-error.ts",
+      "sha256": "0f64d909da4ee5b206827b5af8a1da8f0ab78a5227d1a00b0e47ff4289e8c87d",
+      "fileTagPresent": false,
+      "units": [
+        {
+          "kind": "FunctionDeclaration",
+          "name": "errorMessage",
+          "declarationLine": 13,
+          "parameters": [
+            "error",
+            "fallback"
+          ],
+          "documentationBlockPresent": true,
+          "tags": [
+            {
+              "tag": "param",
+              "parameter": "error"
+            },
+            {
+              "tag": "param",
+              "parameter": "fallback"
+            },
+            {
+              "tag": "returns",
+              "parameter": null
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "file": "client-app/src/main.ts",
+      "sha256": "a53d8bf50034149a8d8b171377d40bfa2cb72535f30894af63a4429355332c76",
+      "fileTagPresent": false,
+      "units": []
+    },
+    {
+      "file": "admin-app/src/app/app.config.ts",
+      "sha256": "259290b7b11838874f91ce188f815413f6d2d97b34be6cf9fbb7f771b4123d26",
+      "fileTagPresent": false,
+      "units": []
+    },
+    {
+      "file": "admin-app/src/app/app.routes.ts",
+      "sha256": "af455f277bdf57a8658cefbb5cce2f10ab1672ddbd0931c29997716178a192e3",
+      "fileTagPresent": false,
+      "units": []
+    },
+    {
+      "file": "admin-app/src/app/app.ts",
+      "sha256": "762ff32c7049f494a301510be775b97b2756deeb412066663924d171ebf9be58",
+      "fileTagPresent": false,
+      "units": []
+    },
+    {
+      "file": "admin-app/src/app/pages/event-form/event-form.ts",
+      "sha256": "2279d1a2a7d25ad032a2a016c63d7ed450c115fdef81adaa55da38c59fa20169",
+      "fileTagPresent": false,
+      "units": [
+        {
+          "kind": "Constructor",
+          "name": "constructor",
+          "declarationLine": 264,
+          "parameters": [
+            "apiService",
+            "route",
+            "router",
+            "cdr"
+          ],
+          "documentationBlockPresent": false,
+          "tags": []
+        },
+        {
+          "kind": "MethodDeclaration",
+          "name": "ngOnInit",
+          "declarationLine": 271,
+          "parameters": [],
+          "documentationBlockPresent": false,
+          "tags": []
+        },
+        {
+          "kind": "MethodDeclaration",
+          "name": "loadCategories",
+          "declarationLine": 285,
+          "parameters": [],
+          "documentationBlockPresent": true,
+          "tags": []
+        },
+        {
+          "kind": "MethodDeclaration",
+          "name": "loadEvent",
+          "declarationLine": 305,
+          "parameters": [
+            "id"
+          ],
+          "documentationBlockPresent": true,
+          "tags": [
+            {
+              "tag": "param",
+              "parameter": "id"
+            }
+          ]
+        },
+        {
+          "kind": "MethodDeclaration",
+          "name": "onSubmit",
+          "declarationLine": 339,
+          "parameters": [],
+          "documentationBlockPresent": true,
+          "tags": []
+        },
+        {
+          "kind": "MethodDeclaration",
+          "name": "handleSuccess",
+          "declarationLine": 367,
+          "parameters": [
+            "message"
+          ],
+          "documentationBlockPresent": true,
+          "tags": [
+            {
+              "tag": "param",
+              "parameter": "message"
+            }
+          ]
+        },
+        {
+          "kind": "MethodDeclaration",
+          "name": "handleError",
+          "declarationLine": 380,
+          "parameters": [
+            "err"
+          ],
+          "documentationBlockPresent": true,
+          "tags": [
+            {
+              "tag": "param",
+              "parameter": "err"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "file": "admin-app/src/app/pages/event-list/event-list.ts",
+      "sha256": "1f87bbc23ea441c32124e92b2b59a6259d75162a60ad28d43b36eaf70599c781",
+      "fileTagPresent": false,
+      "units": [
+        {
+          "kind": "Constructor",
+          "name": "constructor",
+          "declarationLine": 238,
+          "parameters": [
+            "apiService",
+            "cdr"
+          ],
+          "documentationBlockPresent": false,
+          "tags": []
+        },
+        {
+          "kind": "MethodDeclaration",
+          "name": "ngOnInit",
+          "declarationLine": 240,
+          "parameters": [],
+          "documentationBlockPresent": false,
+          "tags": []
+        },
+        {
+          "kind": "MethodDeclaration",
+          "name": "loadEvents",
+          "declarationLine": 247,
+          "parameters": [],
+          "documentationBlockPresent": true,
+          "tags": []
+        },
+        {
+          "kind": "MethodDeclaration",
+          "name": "deleteEvent",
+          "declarationLine": 272,
+          "parameters": [
+            "event"
+          ],
+          "documentationBlockPresent": true,
+          "tags": [
+            {
+              "tag": "param",
+              "parameter": "event"
+            }
+          ]
+        },
+        {
+          "kind": "MethodDeclaration",
+          "name": "getStatus",
+          "declarationLine": 300,
+          "parameters": [
+            "event"
+          ],
+          "documentationBlockPresent": true,
+          "tags": [
+            {
+              "tag": "param",
+              "parameter": "event"
+            },
+            {
+              "tag": "returns",
+              "parameter": null
+            }
+          ]
+        },
+        {
+          "kind": "MethodDeclaration",
+          "name": "formatDate",
+          "declarationLine": 319,
+          "parameters": [
+            "dateString"
+          ],
+          "documentationBlockPresent": true,
+          "tags": [
+            {
+              "tag": "param",
+              "parameter": "dateString"
+            },
+            {
+              "tag": "returns",
+              "parameter": null
+            }
+          ]
+        },
+        {
+          "kind": "MethodDeclaration",
+          "name": "formatTime",
+          "declarationLine": 331,
+          "parameters": [
+            "timeString"
+          ],
+          "documentationBlockPresent": true,
+          "tags": [
+            {
+              "tag": "param",
+              "parameter": "timeString"
+            },
+            {
+              "tag": "returns",
+              "parameter": null
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "file": "admin-app/src/app/services/api.service.ts",
+      "sha256": "34acd5e990a120dade7a3b2d1b8d66a35279f87dbdf88ea41385881f9667681d",
+      "fileTagPresent": false,
+      "units": [
+        {
+          "kind": "Constructor",
+          "name": "constructor",
+          "declarationLine": 47,
+          "parameters": [
+            "http"
+          ],
+          "documentationBlockPresent": false,
+          "tags": []
+        },
+        {
+          "kind": "MethodDeclaration",
+          "name": "getAllEvents",
+          "declarationLine": 54,
+          "parameters": [],
+          "documentationBlockPresent": true,
+          "tags": [
+            {
+              "tag": "returns",
+              "parameter": null
+            }
+          ]
+        },
+        {
+          "kind": "MethodDeclaration",
+          "name": "getEvent",
+          "declarationLine": 63,
+          "parameters": [
+            "id"
+          ],
+          "documentationBlockPresent": true,
+          "tags": [
+            {
+              "tag": "param",
+              "parameter": "id"
+            },
+            {
+              "tag": "returns",
+              "parameter": null
+            }
+          ]
+        },
+        {
+          "kind": "MethodDeclaration",
+          "name": "getCategories",
+          "declarationLine": 71,
+          "parameters": [],
+          "documentationBlockPresent": true,
+          "tags": [
+            {
+              "tag": "returns",
+              "parameter": null
+            }
+          ]
+        },
+        {
+          "kind": "MethodDeclaration",
+          "name": "createEvent",
+          "declarationLine": 80,
+          "parameters": [
+            "payload"
+          ],
+          "documentationBlockPresent": true,
+          "tags": [
+            {
+              "tag": "param",
+              "parameter": "payload"
+            },
+            {
+              "tag": "returns",
+              "parameter": null
+            }
+          ]
+        },
+        {
+          "kind": "MethodDeclaration",
+          "name": "updateEvent",
+          "declarationLine": 90,
+          "parameters": [
+            "id",
+            "payload"
+          ],
+          "documentationBlockPresent": true,
+          "tags": [
+            {
+              "tag": "param",
+              "parameter": "id"
+            },
+            {
+              "tag": "param",
+              "parameter": "payload"
+            },
+            {
+              "tag": "returns",
+              "parameter": null
+            }
+          ]
+        },
+        {
+          "kind": "MethodDeclaration",
+          "name": "deleteEvent",
+          "declarationLine": 100,
+          "parameters": [
+            "id"
+          ],
+          "documentationBlockPresent": true,
+          "tags": [
+            {
+              "tag": "param",
+              "parameter": "id"
+            },
+            {
+              "tag": "returns",
+              "parameter": null
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "file": "admin-app/src/main.ts",
+      "sha256": "a53d8bf50034149a8d8b171377d40bfa2cb72535f30894af63a4429355332c76",
+      "fileTagPresent": false,
+      "units": []
+    }
+  ]
+}

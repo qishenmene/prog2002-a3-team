@@ -1,0 +1,128 @@
+{
+  "head": "d998116",
+  "checkedAt": "2026-10-18T13:53:42.283Z",
+  "scope": "Local isolated database and actual API/browser checks; no school server writes.",
+  "results": [
+    {
+      "check": "Page /",
+      "status": 200,
+      "passed": true
+    },
+    {
+      "check": "Page /admin/",
+      "status": 200,
+      "passed": true
+    },
+    {
+      "check": "Page /admin/edit/2",
+      "status": 200,
+      "passed": true
+    },
+    {
+      "check": "Upcoming events",
+      "count": 6,
+      "status": 200,
+      "passed": true
+    },
+    {
+      "check": "Browser registration persisted",
+      "rows": [
+        {
+          "registration_id": 17,
+          "event_id": 2,
+          "num_tickets": 2
+        }
+      ],
+      "passed": true
+    },
+    {
+      "check": "Duplicate registration blocked",
+      "status": 400,
+      "passed": true
+    },
+    {
+      "check": "Registered event deletion blocked",
+      "status": 400,
+      "passed": true
+    },
+    {
+      "check": "Create event",
+      "status": 201,
+      "id": 11,
+      "passed": true
+    },
+    {
+      "check": "Update event",
+      "status": 200,
+      "passed": true
+    },
+    {
+      "check": "Unregistered test event deletion",
+      "status": 200,
+      "passed": true
+    },
+    {
+      "check": "Suspended event edit loading",
+      "status": 404,
+      "passed": false,
+      "issue": "Admin edit form uses this Available-only endpoint."
+    },
+    {
+      "check": "Single-event response includes registrations",
+      "passed": false,
+      "issue": "Required enhanced detail endpoint; list currently fetched separately."
+    },
+    {
+      "check": "Suspended event rejects new registrations",
+      "status": 201,
+      "passed": false,
+      "issue": "Suspended event accepts direct API registration."
+    },
+    {
+      "check": "Server rejects invalid email",
+      "status": 201,
+      "passed": false,
+      "issue": "Invalid email accepted by API."
+    },
+    {
+      "check": "Local test records cleaned up",
+      "counts": {
+        "events": 10,
+        "registrations": 16
+      },
+      "passed": true
+    }
+  ],
+  "builds": {
+    "client": "passed production build",
+    "admin": "passed production build with /admin/ base href"
+  },
+  "browserChecks": {
+    "home": "6 upcoming events rendered",
+    "search": "Harbour returns one matching event",
+    "registration": "confirmation shown; database persisted 2 tickets; new record displayed first",
+    "suspendedEdit": "Event not found displayed",
+    "adminRequiredValidation": "Empty required Purpose disables Save Changes",
+    "adminEditSave": {
+      "persisted": true,
+      "temporaryChangeRestored": true
+    }
+  },
+  "sourceChanges": "No tracked coursework source changes; local environment and verification only.",
+  "cleanupCounts": {
+    "events": 10,
+    "registrations": 16
+  },
+  "remoteReadOnlyChecks": {
+    "home": "Loaded six upcoming events",
+    "adminList": "Loaded ten events including past and suspended",
+    "suspendedEdit": "Event not found reproduced",
+    "serverWritesPerformed": false
+  },
+  "sourceHead": "d9981164dc19ed0a5b0e2df45badd06f636b0871",
+  "provenance": {
+    "contributorAccount": "pwqcat",
+    "applicationCode": "Existing repository implementation; this evidence submission contains no application source changes.",
+    "originalCheckTimePreserved": true
+  }
+}
