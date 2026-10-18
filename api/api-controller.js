@@ -5,7 +5,7 @@
  * @author Shixiang Tang (A2), Jihan Qu (A3 extensions)
  * @version 2.0
  * @since 2026-10-04
- * @updated 2026-10-16
+ * @updated 2026-10-19
  */
 const eventDb = require("./event_db");
 const express = require("express");
@@ -122,6 +122,43 @@ router.get("/events/all", function (req, res) {
         }
     );
 });
+
+/**
+ * Retrieves an event for the admin edit form, including past and suspended events.
+ * Responds with 400 for an invalid ID, 404 for a missing event, or 500 on a database error.
+ *
+ * @param {Object} req - The HTTP request containing the event ID in req.params.id.
+ * @param {Object} res - The HTTP response used to send event data or an error.
+ * @returns {void} Sends a JSON response to the administrator.
+ */
+function getAdminEvent(req, res) {
+    const eventId = Number(req.params.id);
+    if (!Number.isSafeInteger(eventId) || eventId < 1) {
+        res.status(400).json({ message: "Event ID must be a positive integer." });
+        return;
+    }
+
+    connectionObj.query(
+        "SELECT events.*, categories.category_name FROM events JOIN categories ON events.event_category_id = categories.category_id WHERE events.event_id = ?",
+        [eventId],
+        function (err, results) {
+            if (err) {
+                console.error(err);
+                res.status(500).json({
+                    message: "Oops, something went wrong on the server. Please try again later."
+                });
+                return;
+            }
+            if (results.length === 0) {
+                res.status(404).json({ message: "Event not found." });
+                return;
+            }
+            res.json(results[0]);
+        }
+    );
+}
+
+router.get("/admin/events/:id", getAdminEvent);
 
 /**
  * Accepts an event ID, queries the event, and returns its detailed information.

@@ -1,0 +1,109 @@
+{
+  "checkedAtUTC": "2026-10-18T18:41:00.250Z",
+  "scope": "Read-only HTTP checks against the isolated local database",
+  "baseUrl": "http://127.0.0.1:8080",
+  "allPassed": true,
+  "checks": [
+    {
+      "check": "Admin loads suspended event",
+      "route": "/api/admin/events/7",
+      "expectedStatus": 200,
+      "actualStatus": 200,
+      "eventId": 7,
+      "availability": "Suspended",
+      "passed": true
+    },
+    {
+      "check": "Admin loads available event",
+      "route": "/api/admin/events/2",
+      "expectedStatus": 200,
+      "actualStatus": 200,
+      "eventId": 2,
+      "availability": "Available",
+      "passed": true
+    },
+    {
+      "check": "Admin loads past event",
+      "route": "/api/admin/events/5",
+      "expectedStatus": 200,
+      "actualStatus": 200,
+      "eventId": 5,
+      "availability": "Available",
+      "passed": true
+    },
+    {
+      "check": "Missing admin event returns 404",
+      "route": "/api/admin/events/999999",
+      "expectedStatus": 404,
+      "actualStatus": 404,
+      "passed": true
+    },
+    {
+      "check": "Invalid admin ID returns 400",
+      "route": "/api/admin/events/not-a-number",
+      "expectedStatus": 400,
+      "actualStatus": 400,
+      "passed": true
+    },
+    {
+      "check": "Zero admin ID returns 400",
+      "route": "/api/admin/events/0",
+      "expectedStatus": 400,
+      "actualStatus": 400,
+      "passed": true
+    },
+    {
+      "check": "Public detail excludes suspended event",
+      "route": "/api/events/7",
+      "expectedStatus": 404,
+      "actualStatus": 404,
+      "passed": true
+    },
+    {
+      "check": "Public detail still loads available event",
+      "route": "/api/events/2",
+      "expectedStatus": 200,
+      "actualStatus": 200,
+      "eventId": 2,
+      "availability": "Available",
+      "passed": true
+    },
+    {
+      "check": "Public list excludes suspended event",
+      "route": "/api/events",
+      "expectedStatus": 200,
+      "actualStatus": 200,
+      "passed": true
+    }
+  ],
+  "browserChecks": {
+    "suspendedEventLoaded": true,
+    "availability": "Suspended",
+    "saveConfirmation": "Event updated successfully.",
+    "savedEventMatchesOriginal": true
+  },
+  "dataCounts": {
+    "events": 10,
+    "registrations": 16
+  },
+  "validation": {
+    "apiSyntax": "passed",
+    "adminProductionBuild": "passed with /admin/ base href"
+  },
+  "baseCommit": "efe24baa5f45232f1bf1acc70b644f50784ceb1f",
+  "sourceFiles": [
+    {
+      "path": "api/api-controller.js",
+      "sha256": "63bc70b2ee0c10526d2b6a95ddcdd9bc2ddae600167088bcef0f8a3b6764aead"
+    },
+    {
+      "path": "admin-app/src/app/services/api.service.ts",
+      "sha256": "6fd2b85458457254e94252eb7f6415980f34be41cebab1e10221c8b6ec44c168"
+    },
+    {
+      "path": "README.md",
+      "sha256": "ddc98b9fcc6985497bcd265a3b0245f0babcbee6624b31197ff329ddd9afcae8"
+    }
+  ],
+  "sourceHashEncoding": "UTF-8 with LF line endings"
+}

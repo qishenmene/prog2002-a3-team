@@ -149,10 +149,11 @@ curl -o /dev/null -w "%{http_code}\n" https://<your-domain>/admin/edit/1  # 200,
 curl -o /dev/null -w "%{http_code}\n" https://<your-domain>/event/3       # 200, client deep link
 ```
 
-Then confirm the write endpoints end to end:
+Then confirm the event endpoints end to end:
 
 | Request | Expected |
 | --- | --- |
+| `GET /api/admin/events/:id` | `200` for an existing event, including past or suspended events |
 | `POST /api/events` | `201` with the new `event_id` |
 | `PUT /api/events/:id` | `200` |
 | `DELETE /api/events/:id` | `200` when the event has no registrations |

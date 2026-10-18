@@ -56,12 +56,12 @@ export class ApiService {
   }
 
   /**
-   * Get a single event by ID (used to pre-fill the edit form).
-   * @param id The event ID
-   * @returns Observable of Event
+   * Get an event for editing, regardless of its date or availability.
+   * @param id - The event ID to load into the admin form.
+   * @returns An observable containing the event details.
    */
   getEvent(id: number): Observable<Event> {
-    return this.http.get<Event>(`${this.apiUrl}/events/${id}`);
+    return this.http.get<Event>(`${this.apiUrl}/admin/events/${id}`);
   }
 
   /**
