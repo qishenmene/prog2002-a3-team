@@ -68,20 +68,6 @@ app.use(function (req, res, next) {
  * API
  * ------------------------------------------------------------------ */
 
-// Parse JSON request bodies (required for POST/PUT endpoints)
-app.use(express.json());
-
-// Allow cross-origin requests so the Angular dev server (port 4200) can reach the API
-app.use(function (req, res, next) {
-    res.header("Access-Control-Allow-Origin", "*");
-    res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
-    res.header("Access-Control-Allow-Headers", "Content-Type");
-    if (req.method === "OPTIONS") {
-        return res.sendStatus(204);
-    }
-    next();
-});
-
 app.use("/api", api);
 
 /* ------------------------------------------------------------------ *
