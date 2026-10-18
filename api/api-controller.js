@@ -103,6 +103,27 @@ router.get("/events/search", function (req, res) {
 });
 
 /**
+ * GET /events/all - Admin only: every event regardless of date or availability,
+ * with category name and registration count. Ordered by date descending.
+ */
+router.get("/events/all", function (req, res) {
+    connectionObj.query(
+        `SELECT events.*, categories.category_name,
+                (SELECT COUNT(*) FROM registrations WHERE registrations.event_id = events.event_id) AS registration_count
+         FROM events
+         JOIN categories ON events.event_category_id = categories.category_id
+         ORDER BY event_date DESC, event_time DESC;`,
+        function (err, results) {
+            if (err) {
+                console.log(err);
+                return res.status(500).json({ message: "Oops, something went wrong on the server. Please try again later." });
+            }
+            res.json(results);
+        }
+    );
+});
+
+/**
  * Accepts an event ID, queries the event, and returns its detailed information.
  *
  * @param {Object} req The HTTP request object from the client.
