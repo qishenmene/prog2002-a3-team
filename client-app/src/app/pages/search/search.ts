@@ -1,7 +1,7 @@
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { RouterLink } from '@angular/router';
+import { RouterLink, ActivatedRoute } from '@angular/router';
 import { ApiService, Event } from '../../services/api.service';
 
 /**
@@ -305,10 +305,12 @@ export class Search implements OnInit {
   searched = false;
   error: string | null = null;
 
-  constructor(private apiService: ApiService, private cdr: ChangeDetectorRef) {}
+  constructor(private apiService: ApiService, private cdr: ChangeDetectorRef, private route: ActivatedRoute) {}
 
   /**
-   * Load categories for the filter drop-down on init
+   * Load categories for the filter drop-down on init.
+   * If the URL carries query params (e.g. /search?location=Lismore),
+   * pre-fill the filters and run the search immediately (shareable URLs).
    */
   ngOnInit(): void {
     this.apiService.getCategories().subscribe({
@@ -318,6 +320,13 @@ export class Search implements OnInit {
       },
       error: (err) => console.error('Error loading categories:', err)
     });
+    const q = this.route.snapshot.queryParams;
+    if (Object.keys(q).length > 0) {
+      this.filters.date = q['date'] || '';
+      this.filters.location = q['location'] || '';
+      this.filters.category = q['category'] || '';
+      this.search();
+    }
   }
 
   /**
