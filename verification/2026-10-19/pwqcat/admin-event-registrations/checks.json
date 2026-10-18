@@ -1,0 +1,80 @@
+{
+  "verifiedAt": "2026-10-18T19:55:36.46Z",
+  "baseCommit": "16219d00e150f135f00130bcfaa086c1d809b532",
+  "feature": "Read-only registration list below the admin event edit form",
+  "environment": "Local Express API on 8080 and isolated MySQL on 3309",
+  "productionAdminBuild": {
+    "passed": true,
+    "baseHref": "/admin/",
+    "bundle": "main-ZYUAM3ZV.js",
+    "sha256": "5e9bbb7d7ca8b237ff69cf1445769b907428ff152340180c766c6ba764adf79f"
+  },
+  "browserPages": [
+    "/admin/edit/2",
+    "/admin/edit/7",
+    "/admin/create",
+    "/admin/edit/999999"
+  ],
+  "errorRetryVerification": "A temporary read-only proxy returned one HTTP 503 for registrations, then forwarded the retry to the real local API. No application or database failure was introduced.",
+  "databaseCounts": {
+    "events": 10,
+    "registrations": 16
+  },
+  "databaseWritesDuringVerification": false,
+  "schoolDeploymentUpdated": false,
+  "checks": [
+    {
+      "name": "Registration API returns all three records for event 2",
+      "passed": true
+    },
+    {
+      "name": "Registration API returns newest records first",
+      "passed": true,
+      "details": {
+        "registrationIds": [
+          13,
+          4,
+          3
+        ]
+      }
+    },
+    {
+      "name": "Browser displays the real names and ticket counts",
+      "passed": true
+    },
+    {
+      "name": "Browser preserves the API ordering",
+      "passed": true
+    },
+    {
+      "name": "An optional missing phone is labelled clearly",
+      "passed": true
+    },
+    {
+      "name": "Suspended event 7 remains editable and shows an empty registration message",
+      "passed": true
+    },
+    {
+      "name": "Create form does not display registrations",
+      "passed": true
+    },
+    {
+      "name": "A missing event shows its error without a registration panel",
+      "passed": true
+    },
+    {
+      "name": "A failed registration read shows a retry button and leaves the event editable",
+      "passed": true
+    },
+    {
+      "name": "Clicking Try Again retrieves the real registrations and clears the error",
+      "passed": true
+    },
+    {
+      "name": "Local dataset still contains 10 events and 16 registrations",
+      "passed": true
+    }
+  ],
+  "allPassed": true,
+  "browserScreenshotsRetainedLocally": true
+}

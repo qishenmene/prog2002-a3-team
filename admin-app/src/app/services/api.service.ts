@@ -25,6 +25,20 @@ export interface Event {
 }
 
 /**
+ * A stored event registration returned by the API.
+ * Dates are ISO strings; phone numbers are optional in the database.
+ */
+export interface Registration {
+  registration_id: number;
+  event_id: number;
+  user_name: string;
+  user_email: string;
+  user_phone: string | null;
+  num_tickets: number;
+  registration_date: string;
+}
+
+/**
  * Category interface for event categories.
  */
 export interface Category {
@@ -62,6 +76,15 @@ export class ApiService {
    */
   getEvent(id: number): Observable<Event> {
     return this.http.get<Event>(`${this.apiUrl}/admin/events/${id}`);
+  }
+
+  /**
+   * Get the registrations for an event, ordered newest first by the API.
+   * @param eventId - The event whose registrations should be retrieved.
+   * @returns An observable containing the event's stored registrations.
+   */
+  getEventRegistrations(eventId: number): Observable<Registration[]> {
+    return this.http.get<Registration[]>(`${this.apiUrl}/events/${eventId}/registrations`);
   }
 
   /**

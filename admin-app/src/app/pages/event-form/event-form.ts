@@ -2,12 +2,13 @@ import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { ApiService, Category } from '../../services/api.service';
+import { ApiService, Category, Registration } from '../../services/api.service';
 
 /**
  * Admin event form page, shared by the create and edit routes.
  * In edit mode (route contains an :id param) the form is pre-filled
  * with the existing event and an availability selector is shown.
+ * The edit page also lists the event's registrations without changing them.
  */
 @Component({
   selector: 'app-event-form',
@@ -117,6 +118,51 @@ import { ApiService, Category } from '../../services/api.service';
           </div>
         </form>
       </div>
+
+      <section *ngIf="isEditMode && eventLoaded" class="registration-card"
+               aria-labelledby="registrations-heading">
+        <h2 id="registrations-heading">Event Registrations</h2>
+        <div aria-live="polite">
+          <p *ngIf="loadingRegistrations">Loading registrations...</p>
+          <div *ngIf="!loadingRegistrations && registrationError" class="alert alert-error"
+               role="alert">
+            <p>{{ registrationError }}</p>
+            <button type="button" class="btn-retry" (click)="loadRegistrations(eventId!)">
+              Try Again
+            </button>
+          </div>
+          <p *ngIf="!loadingRegistrations && !registrationError && registrations.length === 0">
+            No registrations for this event yet.
+          </p>
+        </div>
+
+        <ng-container *ngIf="!loadingRegistrations && !registrationError && registrations.length > 0">
+          <p>Total registrations: {{ registrations.length }}. Newest first.</p>
+          <div class="registrations-table-wrapper" tabindex="0" role="region"
+               aria-label="Event registration records">
+            <table class="registrations-table">
+              <thead>
+                <tr>
+                  <th scope="col">Name</th>
+                  <th scope="col">Email</th>
+                  <th scope="col">Phone</th>
+                  <th scope="col">Tickets</th>
+                  <th scope="col">Registered</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let registration of registrations">
+                  <td>{{ registration.user_name }}</td>
+                  <td>{{ registration.user_email }}</td>
+                  <td>{{ registration.user_phone || 'Not provided' }}</td>
+                  <td>{{ registration.num_tickets }}</td>
+                  <td>{{ registration.registration_date | date:'medium' }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </ng-container>
+      </section>
     </div>
   `,
   styles: [`
@@ -159,11 +205,46 @@ import { ApiService, Category } from '../../services/api.service';
       padding: 60px 20px;
       color: #7f8c8d;
     }
-    .form-card {
+    .form-card, .registration-card {
       background: #ffffff;
       border-radius: 10px;
       box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
       padding: 28px;
+    }
+    .registration-card {
+      margin-top: 24px;
+    }
+    .registration-card h2 {
+      margin: 0 0 16px;
+      color: #2c3e50;
+      font-size: 1.25rem;
+    }
+    .registrations-table-wrapper {
+      overflow-x: auto;
+    }
+    .registrations-table {
+      width: 100%;
+      min-width: 600px;
+      border-collapse: collapse;
+      font-size: 0.9rem;
+    }
+    .registrations-table th, .registrations-table td {
+      padding: 12px 10px;
+      text-align: left;
+      border-bottom: 1px solid #e5e9ed;
+    }
+    .registrations-table th {
+      background-color: #f5f7f9;
+      color: #2c3e50;
+    }
+    .btn-retry {
+      background-color: #3498db;
+      color: #ffffff;
+      border: none;
+      border-radius: 5px;
+      padding: 8px 18px;
+      font: inherit;
+      cursor: pointer;
     }
     .field {
       display: flex;
@@ -242,6 +323,14 @@ export class EventForm implements OnInit {
   categories: Category[] = [];
   /** True while the existing event is being fetched (edit mode). */
   loadingEvent = false;
+  /** True after the event details have loaded successfully. */
+  eventLoaded = false;
+  /** Registrations associated with the loaded event, newest first. */
+  registrations: Registration[] = [];
+  /** True while the registration list is being retrieved. */
+  loadingRegistrations = false;
+  /** Registration failures are kept separate from event form errors. */
+  registrationError: string | null = null;
   /** True while a create/update request is in flight. */
   saving = false;
   successMessage: string | null = null;
@@ -268,6 +357,10 @@ export class EventForm implements OnInit {
     private cdr: ChangeDetectorRef
   ) {}
 
+  /**
+   * Load categories and, for an edit route, the selected event.
+   * @returns Nothing; the data is assigned by the API subscriptions.
+   */
   ngOnInit(): void {
     const idParam = this.route.snapshot.paramMap.get('id');
     this.loadCategories();
@@ -300,10 +393,13 @@ export class EventForm implements OnInit {
    * Fetch the existing event and pre-fill the form (edit mode only).
    * The API returns the date as an ISO string and the time as HH:MM:SS,
    * so both are trimmed to fit the date/time inputs.
-   * @param id The event ID
+   * Registrations are requested only after the event has been found.
+   * @param id - The event ID.
+   * @returns Nothing; the loaded event is assigned to the form model.
    */
   loadEvent(id: number): void {
     this.loadingEvent = true;
+    this.eventLoaded = false;
 
     this.apiService.getEvent(id).subscribe({
       next: (event) => {
@@ -320,6 +416,8 @@ export class EventForm implements OnInit {
           event_availability: event.event_availability
         };
         this.loadingEvent = false;
+        this.eventLoaded = true;
+        this.loadRegistrations(id);
         this.cdr.detectChanges();
       },
       error: (err) => {
@@ -327,6 +425,31 @@ export class EventForm implements OnInit {
         this.loadingEvent = false;
         this.cdr.detectChanges();
         console.error('Error loading event:', err);
+      }
+    });
+  }
+
+  /**
+   * Load an event's registrations independently of the editable event fields.
+   * A failed request leaves the event editable and can be retried in the page.
+   * @param eventId - The event whose registration records should be displayed.
+   * @returns Nothing; the subscription updates the list and its loading state.
+   */
+  loadRegistrations(eventId: number): void {
+    this.loadingRegistrations = true;
+    this.registrationError = null;
+    this.registrations = [];
+
+    this.apiService.getEventRegistrations(eventId).subscribe({
+      next: (registrations) => {
+        this.registrations = registrations;
+        this.loadingRegistrations = false;
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.registrationError = 'Failed to load registrations. Please try again.';
+        this.loadingRegistrations = false;
+        this.cdr.detectChanges();
       }
     });
   }
