@@ -19,6 +19,7 @@ const fs = require("fs");
 const api = require("./api-controller");
 
 const app = express();
+// cPanel Passenger assigns the port via process.env.PORT; 8080 for local dev.
 const port = process.env.PORT || 8080;
 
 /* ------------------------------------------------------------------ *
