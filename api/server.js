@@ -84,6 +84,15 @@ const clientRoot = fs.existsSync(clientDist) ? clientDist : legacyClient;
 app.use("/admin", express.static(adminDist));
 app.use(express.static(clientRoot));
 
+// Deep links into the admin app (e.g. /admin/edit/2) return the admin shell.
+app.get(/^\/admin(\/.*)?$/, function (req, res, next) {
+    const adminIndex = path.join(adminDist, "index.html");
+    if (fs.existsSync(adminIndex)) {
+        return res.sendFile(adminIndex);
+    }
+    next();
+});
+
 // Any other GET request that is not an API call returns the client app so the
 // Angular router can handle deep links such as /event/3.
 app.get(/^\/(?!api).*/, function (req, res, next) {
