@@ -161,32 +161,57 @@ function getAdminEvent(req, res) {
 router.get("/admin/events/:id", getAdminEvent);
 
 /**
- * Accepts an event ID, queries the event, and returns its detailed information.
+ * Retrieves a public event and its complete registration list in one response.
+ * Existing event fields stay at the top level; registrations are newest first.
+ * Returns 400 for an invalid ID, 404 for a missing or suspended event, and 500
+ * if either database read fails, so a failed read is not shown as an empty list.
  *
- * @param {Object} req The HTTP request object from the client.
- * @param {Object} res The HTTP response object used to send data back to the client.
+ * @param {Object} req - The HTTP request containing the event ID in req.params.id.
+ * @param {Object} res - The HTTP response used to send the event or an error.
+ * @returns {void} Sends event details and a registrations array as JSON.
  */
-router.get("/events/:id", function (req, res) {
-    const eventId = req.params.id;
+function getEventDetails(req, res) {
+    const eventId = Number(req.params.id);
+    if (!Number.isSafeInteger(eventId) || eventId < 1) {
+        res.status(400).json({ message: "Event ID must be a positive integer." });
+        return;
+    }
+
     connectionObj.query(
-        "SELECT * FROM events JOIN categories ON events.event_category_id = categories.category_id WHERE event_availability = 'Available' AND event_id = ?",
+        "SELECT * FROM events JOIN categories ON events.event_category_id = categories.category_id WHERE event_availability = 'Available' AND events.event_id = ?",
         [eventId],
         function (err, results) {
             if (err) {
-                console.log(err);
-                return res.status(500).json({
+                console.error(err);
+                res.status(500).json({
                     message: "Oops, something went wrong on the server. Please try again later."
                 });
+                return;
             }
             if (results.length === 0) {
-                return res.status(404).json({
-                    message: "Event not found."
-                });
+                res.status(404).json({ message: "Event not found." });
+                return;
             }
-            return res.json(results[0]);
+
+            connectionObj.query(
+                "SELECT * FROM registrations WHERE event_id = ? ORDER BY registration_date DESC, registration_id DESC",
+                [eventId],
+                function (registrationError, registrations) {
+                    if (registrationError) {
+                        console.error(registrationError);
+                        res.status(500).json({
+                            message: "Oops, something went wrong on the server. Please try again later."
+                        });
+                        return;
+                    }
+                    res.json({ ...results[0], registrations });
+                }
+            );
         }
     );
-});
+}
+
+router.get("/events/:id", getEventDetails);
 
 /**
  * GET /events/:id/registrations - Get all registrations for a specific event (A3 NEW)

@@ -31,9 +31,17 @@ export interface Registration {
   event_id: number;
   user_name: string;
   user_email: string;
-  user_phone?: string;
+  user_phone?: string | null;
   num_tickets: number;
   registration_date?: string;
+}
+
+/**
+ * Complete response from the public single-event endpoint.
+ * An event without registrations is returned with an empty array.
+ */
+export interface EventDetails extends Event {
+  registrations: Registration[];
 }
 
 /**
@@ -59,12 +67,12 @@ export class ApiService {
   }
 
   /**
-   * Get a single event by ID
-   * @param id The event ID
-   * @returns Observable of Event
+   * Get an available event and its registrations in a single HTTP request.
+   * @param id - The event ID to retrieve.
+   * @returns An observable containing event details and registrations, newest first.
    */
-  getEvent(id: number): Observable<Event> {
-    return this.http.get<Event>(`${this.apiUrl}/events/${id}`);
+  getEvent(id: number): Observable<EventDetails> {
+    return this.http.get<EventDetails>(`${this.apiUrl}/events/${id}`);
   }
 
   /**

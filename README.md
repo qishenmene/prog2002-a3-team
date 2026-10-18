@@ -153,6 +153,7 @@ Then confirm the event endpoints end to end:
 
 | Request | Expected |
 | --- | --- |
+| `GET /api/events/:id` | `200` with event fields and a `registrations` array ordered newest first; `[]` when none exist |
 | `GET /api/admin/events/:id` | `200` for an existing event, including past or suspended events |
 | `POST /api/events` | `201` with the new `event_id` |
 | `PUT /api/events/:id` | `200` |

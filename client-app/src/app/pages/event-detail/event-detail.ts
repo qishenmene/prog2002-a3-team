@@ -297,11 +297,12 @@ export class EventDetail implements OnInit {
   ) {}
 
   /**
-   * Load the event and its registrations using the :id route parameter
+   * Load the event and its registrations together using the route's event ID.
+   * @returns Nothing; the subscription updates the page or its error state.
    */
   ngOnInit(): void {
     const id = Number(this.route.snapshot.paramMap.get('id'));
-    if (!id) {
+    if (!Number.isSafeInteger(id) || id < 1) {
       this.error = 'Invalid event ID.';
       this.loading = false;
       return;
@@ -310,9 +311,9 @@ export class EventDetail implements OnInit {
     this.apiService.getEvent(id).subscribe({
       next: (data) => {
         this.event = data;
+        this.registrations = data.registrations;
         this.loading = false;
         this.cdr.detectChanges();
-        this.loadRegistrations(id);
       },
       error: (err) => {
         this.error = err.status === 404
@@ -326,21 +327,8 @@ export class EventDetail implements OnInit {
   }
 
   /**
-   * Load registrations for the event, ordered latest first by the API
-   * @param eventId The event ID
-   */
-  loadRegistrations(eventId: number): void {
-    this.apiService.getEventRegistrations(eventId).subscribe({
-      next: (data) => {
-        this.registrations = data;
-        this.cdr.detectChanges();
-      },
-      error: (err) => console.error('Error loading registrations:', err)
-    });
-  }
-
-  /**
-   * Calculate fundraising progress percentage, capped at 100
+   * Calculate fundraising progress percentage, capped at 100.
+   * @returns The rounded percentage, or zero when the goal is unavailable.
    */
   getProgressPercent(): number {
     if (!this.event || this.event.event_goal_amount <= 0) return 0;
@@ -349,14 +337,18 @@ export class EventDetail implements OnInit {
   }
 
   /**
-   * Extract day number from date string
+   * Extract the day number from an event date.
+   * @param dateString - The date value returned by the API.
+   * @returns The local day of the month as a string.
    */
   getDay(dateString: string): string {
     return new Date(dateString).getDate().toString();
   }
 
   /**
-   * Extract month abbreviation from date string
+   * Extract the month abbreviation from an event date.
+   * @param dateString - The date value returned by the API.
+   * @returns The uppercase three-letter month abbreviation.
    */
   getMonth(dateString: string): string {
     const months = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
@@ -364,7 +356,9 @@ export class EventDetail implements OnInit {
   }
 
   /**
-   * Format a date string as "18 Oct 2026"
+   * Format a date string as "18 OCT 2026".
+   * @param dateString - The event or registration date returned by the API.
+   * @returns The formatted date, or an empty string when no date is supplied.
    */
   formatDate(dateString: string): string {
     if (!dateString) return '';
@@ -373,7 +367,9 @@ export class EventDetail implements OnInit {
   }
 
   /**
-   * Format time string for display
+   * Format a database time for display in the page.
+   * @param timeString - A time in HH:MM or HH:MM:SS format.
+   * @returns A twelve-hour time with AM or PM, or an empty string for no time.
    */
   formatTime(timeString: string): string {
     if (!timeString) return '';
