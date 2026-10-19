@@ -46,6 +46,9 @@ export interface Category {
   category_name: string;
 }
 
+/** Result of an event create, update or delete request. */
+export interface EventResponse { message: string; event_id?: number; }
+
 /**
  * API Service for the admin application.
  * Handles all HTTP requests to the charity events admin API endpoints.
@@ -100,8 +103,8 @@ export class ApiService {
    * @param payload The event data to create
    * @returns Observable of the API response (message + new event_id)
    */
-  createEvent(payload: Partial<Event>): Observable<any> {
-    return this.http.post<any>(`${this.apiUrl}/events`, payload);
+  createEvent(payload: Partial<Event>): Observable<EventResponse> {
+    return this.http.post<EventResponse>(`${this.apiUrl}/events`, payload);
   }
 
   /**
@@ -110,8 +113,8 @@ export class ApiService {
    * @param payload The updated event data
    * @returns Observable of the API response message
    */
-  updateEvent(id: number, payload: Partial<Event>): Observable<any> {
-    return this.http.put<any>(`${this.apiUrl}/events/${id}`, payload);
+  updateEvent(id: number, payload: Partial<Event>): Observable<EventResponse> {
+    return this.http.put<EventResponse>(`${this.apiUrl}/events/${id}`, payload);
   }
 
   /**
@@ -120,7 +123,7 @@ export class ApiService {
    * @param id The event ID
    * @returns Observable of the API response message
    */
-  deleteEvent(id: number): Observable<any> {
-    return this.http.delete<any>(`${this.apiUrl}/events/${id}`);
+  deleteEvent(id: number): Observable<EventResponse> {
+    return this.http.delete<EventResponse>(`${this.apiUrl}/events/${id}`);
   }
 }

@@ -1,405 +1,171 @@
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { RouterLink, ActivatedRoute } from '@angular/router';
-import { ApiService, Event } from '../../services/api.service';
+import { ActivatedRoute, Router } from '@angular/router';
+import { Subscription } from 'rxjs';
+import { ApiService, Category, Event } from '../../services/api.service';
+import { EventCard } from '../../components/event-card/event-card';
+import { errorMessage } from '../../shared/http-error';
 
-/**
- * Search page component allowing visitors to filter charity events
- * by date, location and category via GET /api/events/search.
- */
+/** Filters events through the API and preserves search criteria in the URL. */
 @Component({
-  selector: 'app-search',
-  standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink],
+  selector: 'app-search', standalone: true,
+  imports: [CommonModule, FormsModule, EventCard],
   template: `
-    <div class="search-container">
-      <section class="hero">
-        <h2>Search Events</h2>
-        <p>Find charity events by date, location or category</p>
-      </section>
-
-      <!-- Search form -->
+    <section class="search-container" aria-labelledby="search-heading">
+      <div class="hero">
+        <h2 id="search-heading">Search Events</h2>
+        <p>Find a charity event by date, location or category.</p>
+      </div>
+      <div *ngIf="categoryError" class="alert alert-error" role="alert">
+        <p>{{ categoryError }}</p>
+        <button type="button" class="btn btn-outline" (click)="loadCategories()">Retry Categories</button>
+      </div>
       <form class="search-form" (ngSubmit)="search()">
-        <div class="form-field">
-          <label for="date">Date</label>
-          <input type="date" id="date" name="date" [(ngModel)]="filters.date" />
+        <div class="field">
+          <label for="search-date">Date</label>
+          <input class="input" type="date" id="search-date" name="date" [(ngModel)]="filters.date" />
         </div>
-        <div class="form-field">
-          <label for="location">Location</label>
-          <input
-            type="text"
-            id="location"
-            name="location"
-            [(ngModel)]="filters.location"
-            placeholder="e.g. Lismore"
-          />
+        <div class="field">
+          <label for="search-location">Location</label>
+          <input class="input" type="text" id="search-location" name="location" maxlength="150"
+                 [(ngModel)]="filters.location" placeholder="e.g. Harbour Street" />
         </div>
-        <div class="form-field">
-          <label for="category">Category</label>
-          <select id="category" name="category" [(ngModel)]="filters.category">
+        <div class="field">
+          <label for="search-category">Category</label>
+          <select class="select" id="search-category" name="category" [(ngModel)]="filters.category">
             <option value="">All Categories</option>
-            <option *ngFor="let cat of categories" [value]="cat.category_id">
-              {{ cat.category_name }}
-            </option>
+            <option *ngFor="let category of categories" [value]="category.category_id">{{ category.category_name }}</option>
           </select>
         </div>
         <div class="form-actions">
-          <button type="submit" class="btn-search">Search</button>
-          <button type="button" class="btn-clear" (click)="clear()">Clear</button>
+          <button type="submit" class="btn" [disabled]="loading">Search</button>
+          <button type="button" class="btn btn-outline" (click)="clear()">Clear</button>
         </div>
       </form>
-
-      <!-- Loading state -->
-      <div *ngIf="loading" class="loading">
-        <p>Searching events...</p>
+      <p *ngIf="loading" class="loading" role="status">Searching events...</p>
+      <div *ngIf="error" class="alert alert-error" role="alert">
+        <p>{{ error }}</p><button class="btn" type="button" (click)="search()">Try Again</button>
       </div>
-
-      <!-- Error state -->
-      <div *ngIf="error" class="error-message">
-        <p>{{ error }}</p>
-        <button (click)="search()" class="btn-retry">Try Again</button>
-      </div>
-
-      <!-- Results -->
-      <div *ngIf="searched && !loading && !error">
-        <h3 class="results-heading">{{ events.length }} event(s) found</h3>
-
-        <div *ngIf="events.length > 0" class="events-grid">
-          <div *ngFor="let event of events" class="event-card">
-            <div class="event-date-badge">
-              <span class="day">{{ getDay(event.event_date) }}</span>
-              <span class="month">{{ getMonth(event.event_date) }}</span>
-            </div>
-
-            <div class="event-content">
-              <span class="category-tag">{{ event.category_name || 'General' }}</span>
-              <h3>{{ event.event_name }}</h3>
-              <p class="event-address">📍 {{ event.event_address }}</p>
-              <p class="event-time">🕐 {{ formatTime(event.event_time) }}</p>
-              <p class="event-description">{{ truncateDescription(event.event_description) }}</p>
-
-              <div class="event-footer">
-                <span class="ticket-price" *ngIf="event.event_ticket_price > 0">
-                  \${{ event.event_ticket_price }}
-                </span>
-                <span class="ticket-price free" *ngIf="event.event_ticket_price === 0">
-                  FREE
-                </span>
-                <a [routerLink]="['/event', event.event_id]" class="btn-view">View Details</a>
-              </div>
-            </div>
-          </div>
+      <div *ngIf="searched && !loading && !error" aria-live="polite">
+        <h3>{{ events.length }} {{ events.length === 1 ? 'event' : 'events' }} found</h3>
+        <div class="events-grid">
+          <app-event-card *ngFor="let event of events" [event]="event"></app-event-card>
         </div>
-
-        <!-- Empty state -->
         <div *ngIf="events.length === 0" class="empty-state">
-          <p>No events match your search criteria.</p>
+          <h3>No matching events</h3><p>Try another date, a shorter location, or all categories.</p>
         </div>
       </div>
-    </div>
+    </section>
   `,
   styles: [`
-    .search-container {
-      padding: 20px 0;
-    }
-    .hero {
-      text-align: center;
-      margin-bottom: 25px;
-    }
-    .hero h2 {
-      color: #2c3e50;
-      margin-bottom: 10px;
-    }
-    .hero p {
-      color: #7f8c8d;
-      font-size: 1.1em;
-    }
-    .search-form {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 15px;
-      align-items: flex-end;
-      background: white;
-      padding: 20px;
-      border-radius: 10px;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-      margin-bottom: 25px;
-    }
-    .form-field {
-      display: flex;
-      flex-direction: column;
-      flex: 1;
-      min-width: 160px;
-    }
-    .form-field label {
-      font-weight: bold;
-      color: #2c3e50;
-      margin-bottom: 6px;
-      font-size: 0.9em;
-    }
-    .form-field input,
-    .form-field select {
-      padding: 10px;
-      border: 1px solid #bdc3c7;
-      border-radius: 5px;
-      font-size: 1em;
-    }
-    .form-field input:focus,
-    .form-field select:focus {
-      outline: none;
-      border-color: #3498db;
-    }
-    .form-actions {
-      display: flex;
-      gap: 10px;
-    }
-    .btn-search {
-      background-color: #e74c3c;
-      color: white;
-      border: none;
-      padding: 10px 25px;
-      border-radius: 5px;
-      cursor: pointer;
-      font-size: 1em;
-      transition: background-color 0.3s;
-    }
-    .btn-search:hover {
-      background-color: #c0392b;
-    }
-    .btn-clear {
-      background-color: #ecf0f1;
-      color: #2c3e50;
-      border: none;
-      padding: 10px 25px;
-      border-radius: 5px;
-      cursor: pointer;
-      font-size: 1em;
-      transition: background-color 0.3s;
-    }
-    .btn-clear:hover {
-      background-color: #bdc3c7;
-    }
-    .results-heading {
-      color: #2c3e50;
-      margin-bottom: 15px;
-    }
-    .loading, .error-message, .empty-state {
-      text-align: center;
-      padding: 40px;
-      color: #7f8c8d;
-    }
-    .error-message {
-      color: #e74c3c;
-    }
-    .btn-retry {
-      background-color: #3498db;
-      color: white;
-      border: none;
-      padding: 10px 20px;
-      border-radius: 5px;
-      cursor: pointer;
-      margin-top: 10px;
-    }
-    .events-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-      gap: 25px;
-      padding: 20px 0;
-    }
-    .event-card {
-      background: white;
-      border-radius: 10px;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-      overflow: hidden;
-      display: flex;
-      transition: transform 0.3s, box-shadow 0.3s;
-    }
-    .event-card:hover {
-      transform: translateY(-5px);
-      box-shadow: 0 5px 20px rgba(0,0,0,0.15);
-    }
-    .event-date-badge {
-      background: linear-gradient(135deg, #e74c3c, #c0392b);
-      color: white;
-      padding: 20px 15px;
-      text-align: center;
-      min-width: 80px;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-    }
-    .event-date-badge .day {
-      font-size: 2em;
-      font-weight: bold;
-      line-height: 1;
-    }
-    .event-date-badge .month {
-      font-size: 0.9em;
-      text-transform: uppercase;
-      margin-top: 5px;
-    }
-    .event-content {
-      padding: 20px;
-      flex: 1;
-    }
-    .category-tag {
-      background-color: #ecf0f1;
-      color: #7f8c8d;
-      padding: 4px 10px;
-      border-radius: 15px;
-      font-size: 0.8em;
-      text-transform: uppercase;
-    }
-    .event-content h3 {
-      margin: 10px 0;
-      color: #2c3e50;
-      font-size: 1.3em;
-    }
-    .event-address, .event-time {
-      color: #7f8c8d;
-      font-size: 0.9em;
-      margin: 5px 0;
-    }
-    .event-description {
-      color: #555;
-      font-size: 0.95em;
-      line-height: 1.5;
-      margin: 10px 0;
-    }
-    .event-footer {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-top: 15px;
-      padding-top: 15px;
-      border-top: 1px solid #ecf0f1;
-    }
-    .ticket-price {
-      font-size: 1.2em;
-      font-weight: bold;
-      color: #27ae60;
-    }
-    .ticket-price.free {
-      color: #e74c3c;
-    }
-    .btn-view {
-      background-color: #3498db;
-      color: white;
-      text-decoration: none;
-      padding: 8px 20px;
-      border-radius: 5px;
-      font-size: 0.9em;
-      transition: background-color 0.3s;
-    }
-    .btn-view:hover {
-      background-color: #2980b9;
-    }
+    .search-container { padding: 20px 0; }
+    .hero { margin-bottom: 28px; }
+    .hero p { color: var(--muted); }
+    .search-form { display: flex; flex-wrap: wrap; gap: 18px; align-items: flex-end;
+      padding: 24px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); }
+    .field { flex: 1 1 180px; margin: 0; }
+    .form-actions { display: flex; flex-wrap: wrap; gap: 10px; }
+    .events-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 310px), 1fr)); gap: 24px; }
   `]
 })
-export class Search implements OnInit {
-  categories: any[] = [];
+export class Search implements OnInit, OnDestroy {
+  categories: Category[] = [];
   events: Event[] = [];
   filters = { date: '', location: '', category: '' };
   loading = false;
   searched = false;
   error: string | null = null;
+  categoryError: string | null = null;
+  private routeSubscription?: Subscription;
+  private searchSubscription?: Subscription;
 
-  constructor(private apiService: ApiService, private cdr: ChangeDetectorRef, private route: ActivatedRoute) {}
+  constructor(private apiService: ApiService, private cdr: ChangeDetectorRef,
+              private route: ActivatedRoute, private router: Router) {}
 
   /**
-   * Load categories for the filter drop-down on init.
-   * If the URL carries query params (e.g. /search?location=Lismore),
-   * pre-fill the filters and run the search immediately (shareable URLs).
+   * Load categories and restore searches when browser history changes.
+   * @returns void
    */
   ngOnInit(): void {
-    this.apiService.getCategories().subscribe({
-      next: (data) => {
-        this.categories = data;
+    this.loadCategories();
+    this.routeSubscription = this.route.queryParamMap.subscribe(query => {
+      this.filters = { date: query.get('date') || '', location: query.get('location') || '', category: query.get('category') || '' };
+      if (query.keys.length) this.loadResults();
+      else {
+        this.searchSubscription?.unsubscribe();
+        this.events = []; this.searched = false; this.loading = false; this.error = null;
         this.cdr.detectChanges();
-      },
-      error: (err) => console.error('Error loading categories:', err)
-    });
-    const q = this.route.snapshot.queryParams;
-    if (Object.keys(q).length > 0) {
-      this.filters.date = q['date'] || '';
-      this.filters.location = q['location'] || '';
-      this.filters.category = q['category'] || '';
-      this.search();
-    }
-  }
-
-  /**
-   * Execute a search with the current filter values.
-   * Empty filters are omitted from the query string.
-   */
-  search(): void {
-    this.loading = true;
-    this.error = null;
-
-    const params: any = {};
-    if (this.filters.date) params.date = this.filters.date;
-    if (this.filters.location) params.location = this.filters.location;
-    if (this.filters.category) params.category = this.filters.category;
-
-    this.apiService.searchEvents(params).subscribe({
-      next: (data) => {
-        this.events = data;
-        this.loading = false;
-        this.searched = true;
-        this.cdr.detectChanges();
-      },
-      error: (err) => {
-        this.error = 'Search failed. Please try again later.';
-        this.loading = false;
-        this.cdr.detectChanges();
-        console.error('Error searching events:', err);
       }
     });
   }
 
   /**
-   * Reset all filters and clear the results
+   * Cancel requests when leaving the search page.
+   * @returns void
+   */
+  ngOnDestroy(): void {
+    this.routeSubscription?.unsubscribe();
+    this.searchSubscription?.unsubscribe();
+  }
+
+  /**
+   * Load category options, keeping any error separate from search results.
+   * @returns void
+   */
+  loadCategories(): void {
+    this.categoryError = null;
+    this.apiService.getCategories().subscribe({
+      next: data => { this.categories = data; this.cdr.detectChanges(); },
+      error: err => { this.categoryError = errorMessage(err, 'Unable to load categories.'); this.cdr.detectChanges(); }
+    });
+  }
+
+  /**
+   * Save filters to a shareable URL, then let the route subscription search.
+   * @returns void
+   */
+  search(): void {
+    const params = this.searchParams();
+    const queryParams = Object.keys(params).length ? params : { all: '1' };
+    const target = this.router.createUrlTree([], { relativeTo: this.route, queryParams }).toString();
+    if (target === this.router.url) this.loadResults();
+    else void this.router.navigateByUrl(target);
+  }
+
+  /**
+   * Request matching events and discard an earlier unfinished search.
+   * @returns void
+   */
+  private loadResults(): void {
+    this.searchSubscription?.unsubscribe();
+    this.loading = true; this.error = null;
+    this.searchSubscription = this.apiService.searchEvents(this.searchParams()).subscribe({
+      next: data => { this.events = data; this.loading = false; this.searched = true; this.cdr.detectChanges(); },
+      error: err => { this.error = errorMessage(err, 'Search failed. Please try again.'); this.loading = false; this.cdr.detectChanges(); }
+    });
+  }
+
+  /**
+   * Omit empty filters from the API request.
+   * @returns The date, location and category values currently in use.
+   */
+  private searchParams(): Record<string, string> {
+    const params: Record<string, string> = {};
+    if (this.filters.date) params['date'] = this.filters.date;
+    if (this.filters.location.trim()) params['location'] = this.filters.location.trim();
+    if (this.filters.category) params['category'] = this.filters.category;
+    return params;
+  }
+
+  /**
+   * Remove filters and results from the page and URL.
+   * @returns void
    */
   clear(): void {
+    this.searchSubscription?.unsubscribe();
     this.filters = { date: '', location: '', category: '' };
-    this.events = [];
-    this.searched = false;
-    this.error = null;
-  }
-
-  /**
-   * Extract day number from date string
-   */
-  getDay(dateString: string): string {
-    return new Date(dateString).getDate().toString();
-  }
-
-  /**
-   * Extract month abbreviation from date string
-   */
-  getMonth(dateString: string): string {
-    const months = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
-    return months[new Date(dateString).getMonth()];
-  }
-
-  /**
-   * Format time string for display
-   */
-  formatTime(timeString: string): string {
-    if (!timeString) return '';
-    const [hours, minutes] = timeString.split(':');
-    const hour = parseInt(hours);
-    const ampm = hour >= 12 ? 'PM' : 'AM';
-    const hour12 = hour % 12 || 12;
-    return `${hour12}:${minutes} ${ampm}`;
-  }
-
-  /**
-   * Truncate description to 100 characters
-   */
-  truncateDescription(description: string): string {
-    if (!description) return '';
-    return description.length > 100 ? description.substring(0, 100) + '...' : description;
+    this.events = []; this.searched = false; this.loading = false; this.error = null;
+    void this.router.navigate([], { relativeTo: this.route, queryParams: {} });
   }
 }

@@ -29,6 +29,7 @@ export class EventCard {
 
   /**
    * Day number shown in the date badge.
+   * @returns The value shown by this event card.
    */
   getDay(): string {
     return dayOfMonth(this.event().event_date);
@@ -36,6 +37,7 @@ export class EventCard {
 
   /**
    * Month abbreviation shown in the date badge.
+   * @returns The value shown by this event card.
    */
   getMonth(): string {
     return monthAbbr(this.event().event_date);
@@ -43,6 +45,7 @@ export class EventCard {
 
   /**
    * Start time in 12 hour format.
+   * @returns The value shown by this event card.
    */
   getTime(): string {
     return formatTime(this.event().event_time);
@@ -50,6 +53,7 @@ export class EventCard {
 
   /**
    * Short description for the card body.
+   * @returns The value shown by this event card.
    */
   getSummary(): string {
     return truncate(this.event().event_description, 100);
@@ -57,6 +61,7 @@ export class EventCard {
 
   /**
    * Price label for the card footer.
+   * @returns The value shown by this event card.
    */
   getPrice(): string {
     return Number(this.event().event_ticket_price) === 0
@@ -66,6 +71,7 @@ export class EventCard {
 
   /**
    * True when the event is free, used for a different price colour.
+   * @returns The value shown by this event card.
    */
   isFree(): boolean {
     return Number(this.event().event_ticket_price) === 0;

@@ -1,4 +1,5 @@
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { dayOfMonth, monthAbbr, formatDateShort, formatDateTime, formatTime, formatMoney } from '../../shared/format';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { ApiService, Event, Registration } from '../../services/api.service';
@@ -14,12 +15,12 @@ import { ApiService, Event, Registration } from '../../services/api.service';
   template: `
     <div class="detail-container">
       <!-- Loading state -->
-      <div *ngIf="loading" class="loading">
+      <div *ngIf="loading" class="loading" role="status">
         <p>Loading event details...</p>
       </div>
 
       <!-- Not found / error state -->
-      <div *ngIf="!loading && error" class="error-message">
+      <div *ngIf="!loading && error" class="error-message" role="alert">
         <h3>{{ error }}</h3>
         <a routerLink="/" class="btn-back">Back to Home</a>
       </div>
@@ -56,7 +57,7 @@ import { ApiService, Event, Registration } from '../../services/api.service';
             </div>
             <div class="info-row">
               <span class="info-label">🎫 Ticket Price</span>
-              <span *ngIf="event.event_ticket_price > 0">\${{ event.event_ticket_price }}</span>
+              <span *ngIf="event.event_ticket_price > 0">{{ event.event_ticket_price | currency:'AUD':'symbol':'1.2-2' }}</span>
               <span *ngIf="event.event_ticket_price === 0" class="free-text">FREE</span>
             </div>
 
@@ -68,11 +69,11 @@ import { ApiService, Event, Registration } from '../../services/api.service';
             <!-- Fundraising progress -->
             <div class="progress-section">
               <h3>Fundraising Progress</h3>
-              <div class="progress-bar">
+              <div class="progress-bar" role="progressbar" aria-label="Fundraising progress" aria-valuemin="0" aria-valuemax="100" [attr.aria-valuenow]="getProgressPercent()">
                 <div class="progress-fill" [style.width.%]="getProgressPercent()"></div>
               </div>
               <p class="progress-text">
-                \${{ event.event_goal_raised_amount }} raised of \${{ event.event_goal_amount }} goal
+                {{ event.event_goal_raised_amount | currency:'AUD':'symbol':'1.2-2' }} raised of {{ event.event_goal_amount | currency:'AUD':'symbol':'1.2-2' }} goal
                 ({{ getProgressPercent() }}%)
               </p>
             </div>
@@ -87,27 +88,29 @@ import { ApiService, Event, Registration } from '../../services/api.service';
           <p *ngIf="registrations.length === 0" class="no-registrations">
             No registrations yet. Be the first to register!
           </p>
-          <table *ngIf="registrations.length > 0" class="registrations-table">
+          <div class="table-scroll" tabindex="0" role="region" aria-label="Event registrations"><table *ngIf="registrations.length > 0" class="registrations-table">
             <thead>
               <tr>
-                <th>Name</th>
-                <th>Tickets</th>
-                <th>Registered On</th>
+                <th scope="col">Name</th>
+                <th scope="col">Tickets</th>
+                <th scope="col">Registered On</th>
               </tr>
             </thead>
             <tbody>
               <tr *ngFor="let reg of registrations">
                 <td>{{ reg.user_name }}</td>
                 <td>{{ reg.num_tickets }}</td>
-                <td>{{ formatDate(reg.registration_date || '') }}</td>
+                <td>{{ formatRegistrationDate(reg.registration_date || '') }}</td>
               </tr>
             </tbody>
-          </table>
+          </table></div>
         </div>
       </div>
     </div>
   `,
   styles: [`
+    .table-scroll { overflow-x: auto; }
+    @media (max-width: 600px) { .info-row { flex-direction: column; gap: 4px; } .detail-header { align-items: flex-start; } }
     .detail-container {
       padding: 20px 0;
     }
@@ -298,7 +301,7 @@ export class EventDetail implements OnInit {
 
   /**
    * Load the event and its registrations together using the route's event ID.
-   * @returns Nothing; the subscription updates the page or its error state.
+   * @returns void
    */
   ngOnInit(): void {
     const id = Number(this.route.snapshot.paramMap.get('id'));
@@ -333,7 +336,7 @@ export class EventDetail implements OnInit {
   getProgressPercent(): number {
     if (!this.event || this.event.event_goal_amount <= 0) return 0;
     const percent = (this.event.event_goal_raised_amount / this.event.event_goal_amount) * 100;
-    return Math.min(Math.round(percent), 100);
+    return Math.max(0, Math.min(Math.round(percent), 100));
   }
 
   /**
@@ -342,7 +345,7 @@ export class EventDetail implements OnInit {
    * @returns The local day of the month as a string.
    */
   getDay(dateString: string): string {
-    return new Date(dateString).getDate().toString();
+    return dayOfMonth(dateString);
   }
 
   /**
@@ -351,8 +354,7 @@ export class EventDetail implements OnInit {
    * @returns The uppercase three-letter month abbreviation.
    */
   getMonth(dateString: string): string {
-    const months = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
-    return months[new Date(dateString).getMonth()];
+    return monthAbbr(dateString);
   }
 
   /**
@@ -361,9 +363,7 @@ export class EventDetail implements OnInit {
    * @returns The formatted date, or an empty string when no date is supplied.
    */
   formatDate(dateString: string): string {
-    if (!dateString) return '';
-    const d = new Date(dateString);
-    return `${d.getDate()} ${this.getMonth(dateString)} ${d.getFullYear()}`;
+    return formatDateShort(dateString);
   }
 
   /**
@@ -372,11 +372,12 @@ export class EventDetail implements OnInit {
    * @returns A twelve-hour time with AM or PM, or an empty string for no time.
    */
   formatTime(timeString: string): string {
-    if (!timeString) return '';
-    const [hours, minutes] = timeString.split(':');
-    const hour = parseInt(hours);
-    const ampm = hour >= 12 ? 'PM' : 'AM';
-    const hour12 = hour % 12 || 12;
-    return `${hour12}:${minutes} ${ampm}`;
+    return formatTime(timeString);
   }
+  /**
+   * Display the registration time as well as its date.
+   * @param value - The timestamp returned by the API.
+   * @returns A readable date and time, or an empty string.
+   */
+  formatRegistrationDate(value: string): string { return formatDateTime(value); }
 }

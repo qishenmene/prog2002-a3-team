@@ -1,8 +1,16 @@
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import { HttpErrorResponse } from '@angular/common/http';
+import { FormsModule, NgForm } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { ApiService, Category, Registration } from '../../services/api.service';
+
+/** Editable fields; numeric controls are empty until staff enter a value. */
+interface EventFormModel {
+  event_name: string; event_date: string; event_time: string; event_address: string;
+  event_purpose: string; event_description: string; event_ticket_price: number | null;
+  event_goal_amount: number | null; event_category_id: number | null; event_availability: string;
+}
 
 /**
  * Admin event form page, shared by the create and edit routes.
@@ -20,12 +28,12 @@ import { ApiService, Category, Registration } from '../../services/api.service';
       <h1>{{ isEditMode ? 'Edit Event' : 'Create New Event' }}</h1>
 
       <!-- Success banner -->
-      <div *ngIf="successMessage" class="alert alert-success">
+      <div *ngIf="successMessage" class="alert alert-success" role="status">
         {{ successMessage }}
       </div>
 
       <!-- Error banner -->
-      <div *ngIf="errorMessage" class="alert alert-error">
+      <div *ngIf="errorMessage" class="alert alert-error" role="alert">
         {{ errorMessage }}
       </div>
 
@@ -34,12 +42,12 @@ import { ApiService, Category, Registration } from '../../services/api.service';
         <p>Loading event...</p>
       </div>
 
-      <div *ngIf="!loadingEvent" class="form-card">
-        <form #eventForm="ngForm" (ngSubmit)="onSubmit()">
+      <div *ngIf="!loadingEvent && (!isEditMode || eventLoaded)" class="form-card">
+        <form #eventForm="ngForm" (ngSubmit)="onSubmit(eventForm)">
           <div class="field">
             <label for="event_name">Event Name *</label>
             <input id="event_name" name="event_name" class="input" type="text"
-                   [(ngModel)]="form.event_name" required />
+                   [(ngModel)]="form.event_name" required maxlength="100" pattern=".*\\S.*" />
           </div>
 
           <div class="field-row">
@@ -58,32 +66,32 @@ import { ApiService, Category, Registration } from '../../services/api.service';
           <div class="field">
             <label for="event_address">Location / Address *</label>
             <input id="event_address" name="event_address" class="input" type="text"
-                   [(ngModel)]="form.event_address" required />
+                   [(ngModel)]="form.event_address" required maxlength="150" pattern=".*\\S.*" />
           </div>
 
           <div class="field">
             <label for="event_purpose">Purpose *</label>
             <input id="event_purpose" name="event_purpose" class="input" type="text"
-                   [(ngModel)]="form.event_purpose" required />
+                   [(ngModel)]="form.event_purpose" required maxlength="150" pattern=".*\\S.*" />
           </div>
 
           <div class="field">
             <label for="event_description">Description *</label>
             <textarea id="event_description" name="event_description" class="textarea"
-                      [(ngModel)]="form.event_description" required></textarea>
+                      [(ngModel)]="form.event_description" required maxlength="500" pattern=".*\\S.*"></textarea>
           </div>
 
           <div class="field-row">
             <div class="field">
               <label for="event_ticket_price">Ticket Price ($) *</label>
               <input id="event_ticket_price" name="event_ticket_price" class="input"
-                     type="number" step="0.01" min="0"
+                     type="number" step="0.01" min="0" max="99999999.99"
                      [(ngModel)]="form.event_ticket_price" required />
             </div>
             <div class="field">
               <label for="event_goal_amount">Goal Amount ($) *</label>
               <input id="event_goal_amount" name="event_goal_amount" class="input"
-                     type="number" step="0.01" min="0"
+                     type="number" step="0.01" min="0" max="99999999.99"
                      [(ngModel)]="form.event_goal_amount" required />
             </div>
           </div>
@@ -337,7 +345,7 @@ export class EventForm implements OnInit {
   errorMessage: string | null = null;
 
   /** Form model bound with ngModel. */
-  form: any = {
+  form: EventFormModel = {
     event_name: '',
     event_date: '',
     event_time: '',
@@ -359,7 +367,7 @@ export class EventForm implements OnInit {
 
   /**
    * Load categories and, for an edit route, the selected event.
-   * @returns Nothing; the data is assigned by the API subscriptions.
+   * @returns void
    */
   ngOnInit(): void {
     const idParam = this.route.snapshot.paramMap.get('id');
@@ -374,6 +382,7 @@ export class EventForm implements OnInit {
 
   /**
    * Load the category options for the dropdown.
+   * @returns void
    */
   loadCategories(): void {
     this.apiService.getCategories().subscribe({
@@ -395,7 +404,7 @@ export class EventForm implements OnInit {
    * so both are trimmed to fit the date/time inputs.
    * Registrations are requested only after the event has been found.
    * @param id - The event ID.
-   * @returns Nothing; the loaded event is assigned to the form model.
+   * @returns void
    */
   loadEvent(id: number): void {
     this.loadingEvent = true;
@@ -433,7 +442,7 @@ export class EventForm implements OnInit {
    * Load an event's registrations independently of the editable event fields.
    * A failed request leaves the event editable and can be retried in the page.
    * @param eventId - The event whose registration records should be displayed.
-   * @returns Nothing; the subscription updates the list and its loading state.
+   * @returns void
    */
   loadRegistrations(eventId: number): void {
     this.loadingRegistrations = true;
@@ -458,9 +467,12 @@ export class EventForm implements OnInit {
    * Submit the form: create a new event or update the existing one.
    * On success a green banner is shown and the user is sent back to
    * the list after one second.
+   * @param eventForm - The template form to validate before saving.
+   * @returns void
    */
-  onSubmit(): void {
-    if (this.saving) {
+  onSubmit(eventForm: NgForm): void {
+    eventForm.control.markAllAsTouched();
+    if (eventForm.invalid || this.saving) {
       return;
     }
     this.saving = true;
@@ -468,7 +480,8 @@ export class EventForm implements OnInit {
     this.errorMessage = null;
 
     if (this.isEditMode && this.eventId !== null) {
-      const payload = { ...this.form };
+      const payload = { ...this.form, event_ticket_price: Number(this.form.event_ticket_price),
+        event_goal_amount: Number(this.form.event_goal_amount), event_category_id: Number(this.form.event_category_id) };
       this.apiService.updateEvent(this.eventId, payload).subscribe({
         next: () => this.handleSuccess('Event updated successfully.'),
         error: (err) => this.handleError(err)
@@ -476,7 +489,8 @@ export class EventForm implements OnInit {
     } else {
       // The backend defaults availability to 'Available' on creation.
       const { event_availability, ...payload } = this.form;
-      this.apiService.createEvent(payload).subscribe({
+      this.apiService.createEvent({ ...payload, event_ticket_price: Number(payload.event_ticket_price),
+        event_goal_amount: Number(payload.event_goal_amount), event_category_id: Number(payload.event_category_id) }).subscribe({
         next: () => this.handleSuccess('Event created successfully.'),
         error: (err) => this.handleError(err)
       });
@@ -485,7 +499,8 @@ export class EventForm implements OnInit {
 
   /**
    * Show the success banner, then navigate back to the event list.
-   * @param message The success message to display
+   * @param message - The success message to display.
+   * @returns void
    */
   private handleSuccess(message: string): void {
     this.saving = false;
@@ -498,9 +513,10 @@ export class EventForm implements OnInit {
 
   /**
    * Display the API error message verbatim when available.
-   * @param err The HTTP error response
+   * @param err - The HTTP error response.
+   * @returns void
    */
-  private handleError(err: any): void {
+  private handleError(err: HttpErrorResponse): void {
     this.saving = false;
     this.errorMessage = err.error?.message || 'Failed to save event. Please try again later.';
     this.cdr.detectChanges();

@@ -6,6 +6,8 @@ import { Observable } from 'rxjs';
  * Event interface representing a charity event
  */
 export interface Event {
+  latitude?: number | null;
+  longitude?: number | null;
   event_id: number;
   event_name: string;
   event_date: string;
@@ -44,6 +46,12 @@ export interface EventDetails extends Event {
   registrations: Registration[];
 }
 
+/** A category used by the event filter. */
+export interface Category { category_id: number; category_name: string; }
+
+/** Confirmation returned after a registration has been saved. */
+export interface RegistrationResponse { message: string; registration_id: number; }
+
 /**
  * API Service for communicating with the backend
  * Handles all HTTP requests to the charity events API
@@ -79,8 +87,8 @@ export class ApiService {
    * Get all event categories
    * @returns Observable of categories array
    */
-  getCategories(): Observable<any[]> {
-    return this.http.get<any[]>(`${this.apiUrl}/categories`);
+  getCategories(): Observable<Category[]> {
+    return this.http.get<Category[]>(`${this.apiUrl}/categories`);
   }
 
   /**
@@ -88,7 +96,7 @@ export class ApiService {
    * @param params Search parameters (date, location, category)
    * @returns Observable of Event array
    */
-  searchEvents(params: any): Observable<Event[]> {
+  searchEvents(params: Record<string, string>): Observable<Event[]> {
     return this.http.get<Event[]>(`${this.apiUrl}/events/search`, { params });
   }
 
@@ -106,7 +114,7 @@ export class ApiService {
    * @param registration The registration data
    * @returns Observable of the created registration
    */
-  submitRegistration(registration: Registration): Observable<any> {
-    return this.http.post<any>(`${this.apiUrl}/registrations`, registration);
+  submitRegistration(registration: Registration): Observable<RegistrationResponse> {
+    return this.http.post<RegistrationResponse>(`${this.apiUrl}/registrations`, registration);
   }
 }

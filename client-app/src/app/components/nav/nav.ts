@@ -10,10 +10,10 @@ import { RouterLink, RouterLinkActive } from '@angular/router';
   standalone: true,
   imports: [RouterLink, RouterLinkActive],
   template: `
-    <nav class="nav">
+    <nav class="nav" aria-label="Main navigation">
       <ul class="nav-list">
-        <li><a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">Home</a></li>
-        <li><a routerLink="/search" routerLinkActive="active">Search Events</a></li>
+        <li><a routerLink="/" routerLinkActive="active" ariaCurrentWhenActive="page" [routerLinkActiveOptions]="{exact: true}">Home</a></li>
+        <li><a routerLink="/search" routerLinkActive="active" ariaCurrentWhenActive="page">Search Events</a></li>
       </ul>
     </nav>
   `,

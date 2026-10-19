@@ -1,7 +1,9 @@
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, ViewChild, ElementRef } from '@angular/core';
+import { dayOfMonth, monthAbbr, formatDateShort, formatDateTime, formatTime, formatMoney } from '../../shared/format';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import { FormsModule, NgForm } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
+import { errorMessage } from '../../shared/http-error';
 import { ApiService, Event } from '../../services/api.service';
 
 /**
@@ -15,12 +17,12 @@ import { ApiService, Event } from '../../services/api.service';
   template: `
     <div class="register-container">
       <!-- Loading state -->
-      <div *ngIf="loading" class="loading">
+      <div *ngIf="loading" class="loading" role="status">
         <p>Loading event information...</p>
       </div>
 
       <!-- Error loading event -->
-      <div *ngIf="!loading && loadError" class="error-message">
+      <div *ngIf="!loading && loadError" class="error-message" role="alert">
         <h3>{{ loadError }}</h3>
         <a routerLink="/" class="btn-back">Back to Home</a>
       </div>
@@ -39,7 +41,7 @@ import { ApiService, Event } from '../../services/api.service';
           <p class="summary-row">🕐 {{ formatTime(event.event_time) }}</p>
           <p class="summary-row">📍 {{ event.event_address }}</p>
           <p class="summary-row price" *ngIf="event.event_ticket_price > 0">
-            🎫 \${{ event.event_ticket_price }} per ticket
+            🎫 {{ event.event_ticket_price | currency:'AUD':'symbol':'1.2-2' }} per ticket
           </p>
           <p class="summary-row price free" *ngIf="event.event_ticket_price === 0">
             🎫 FREE entry
@@ -52,11 +54,11 @@ import { ApiService, Event } from '../../services/api.service';
           <p class="helper-text">Enter your details to complete your registration.</p>
 
           <!-- Server error message -->
-          <div *ngIf="submitError" class="server-error">
+          <div *ngIf="submitError" class="server-error" role="alert">
             {{ submitError }}
           </div>
 
-          <form (ngSubmit)="submit()" #regForm="ngForm">
+          <form (ngSubmit)="submit(regForm)" #regForm="ngForm">
             <div class="form-field">
               <label for="user_name">Full Name <span class="required">*</span></label>
               <input
@@ -64,7 +66,7 @@ import { ApiService, Event } from '../../services/api.service';
                 id="user_name"
                 name="user_name"
                 [(ngModel)]="form.user_name"
-                required
+                required maxlength="100" pattern=".*\\S.*" autocomplete="name"
                 #nameInput="ngModel"
                 [class.invalid]="nameInput.invalid && nameInput.touched"
               />
@@ -81,7 +83,7 @@ import { ApiService, Event } from '../../services/api.service';
                 name="user_email"
                 [(ngModel)]="form.user_email"
                 required
-                email
+                email maxlength="100" autocomplete="email"
                 #emailInput="ngModel"
                 [class.invalid]="emailInput.invalid && emailInput.touched"
               />
@@ -97,6 +99,7 @@ import { ApiService, Event } from '../../services/api.service';
                 id="user_phone"
                 name="user_phone"
                 [(ngModel)]="form.user_phone"
+                maxlength="20" autocomplete="tel"
                 placeholder="e.g. 0412 345 678"
               />
             </div>
@@ -109,15 +112,17 @@ import { ApiService, Event } from '../../services/api.service';
                 name="num_tickets"
                 [(ngModel)]="form.num_tickets"
                 required
-                min="1"
+                min="1" max="2147483647" step="1" pattern="[0-9]+"
                 #ticketsInput="ngModel"
                 [class.invalid]="ticketsInput.invalid && ticketsInput.touched"
               />
               <span class="validation-error" *ngIf="ticketsInput.invalid && ticketsInput.touched">
-                Please select at least 1 ticket.
+                Enter a whole number of tickets, starting at 1.
               </span>
             </div>
 
+            <p class="order-total">Total: <strong>{{ totalCost() | currency:'AUD':'symbol':'1.2-2' }}</strong></p>
+            <p class="helper-text">{{ form.num_tickets || 0 }} ticket(s). Your details will be used for this event registration.</p>
             <button
               type="submit"
               class="btn-submit"
@@ -129,9 +134,11 @@ import { ApiService, Event } from '../../services/api.service';
         </div>
 
         <!-- Success confirmation panel -->
-        <div class="form-card success-panel" *ngIf="submitted">
+        <div class="form-card success-panel" *ngIf="submitted" #confirmation tabindex="-1" role="status">
           <div class="success-icon">✓</div>
           <h3>Registration Confirmed!</h3>
+          <p>Registration reference: <strong>{{ registrationId }}</strong></p>
+          <p>{{ form.num_tickets }} ticket(s) · Total {{ totalCost() | currency:'AUD':'symbol':'1.2-2' }}</p>
           <p>
             Thank you, <strong>{{ form.user_name }}</strong>! Your registration for
             <strong>{{ event.event_name }}</strong> is confirmed.
@@ -329,6 +336,8 @@ import { ApiService, Event } from '../../services/api.service';
   `]
 })
 export class Register implements OnInit {
+  @ViewChild('confirmation') confirmation?: ElementRef<HTMLElement>;
+  registrationId: number | null = null;
   event: Event | null = null;
   form = {
     user_name: '',
@@ -350,11 +359,11 @@ export class Register implements OnInit {
 
   /**
    * Load the event summary using the route's event ID.
-   * @returns Nothing; the subscription updates the event or loading error.
+   * @returns void
    */
   ngOnInit(): void {
     const id = Number(this.route.snapshot.paramMap.get('id'));
-    if (!id) {
+    if (!Number.isSafeInteger(id) || id < 1) {
       this.loadError = 'Invalid event ID.';
       this.loading = false;
       return;
@@ -380,10 +389,16 @@ export class Register implements OnInit {
   /**
    * Submit the registration to the API.
    * Displays confirmation after saving, or the server error on failure.
-   * @returns Nothing; the subscription updates the submission state.
+   * @param regForm - The form whose controls are validated before submitting.
+   * @returns void
    */
-  submit(): void {
-    if (!this.event) return;
+  submit(regForm: NgForm): void {
+    if (!this.event || this.submitting || this.submitted) return;
+    regForm.control.markAllAsTouched();
+    if (regForm.invalid || !this.form.user_name.trim() || !Number.isInteger(this.form.num_tickets)) return;
+    this.form.user_name = this.form.user_name.trim();
+    this.form.user_email = this.form.user_email.trim();
+    this.form.user_phone = this.form.user_phone.trim();
 
     this.submitting = true;
     this.submitError = null;
@@ -395,13 +410,15 @@ export class Register implements OnInit {
       user_phone: this.form.user_phone,
       num_tickets: this.form.num_tickets
     }).subscribe({
-      next: () => {
+      next: (response) => {
+        this.registrationId = response.registration_id;
         this.submitted = true;
         this.submitting = false;
         this.cdr.detectChanges();
+        this.confirmation?.nativeElement.focus();
       },
       error: (err) => {
-        this.submitError = err.error?.message || 'Failed to submit registration. Please try again later.';
+        this.submitError = errorMessage(err, 'Failed to submit registration. Please try again.');
         this.submitting = false;
         this.cdr.detectChanges();
         console.error('Error submitting registration:', err);
@@ -415,7 +432,7 @@ export class Register implements OnInit {
    * @returns The local day of the month as a string.
    */
   getDay(dateString: string): string {
-    return new Date(dateString).getDate().toString();
+    return dayOfMonth(dateString);
   }
 
   /**
@@ -424,8 +441,7 @@ export class Register implements OnInit {
    * @returns The uppercase three-letter month abbreviation.
    */
   getMonth(dateString: string): string {
-    const months = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
-    return months[new Date(dateString).getMonth()];
+    return monthAbbr(dateString);
   }
 
   /**
@@ -434,9 +450,7 @@ export class Register implements OnInit {
    * @returns The formatted date, or an empty string when no date is supplied.
    */
   formatDate(dateString: string): string {
-    if (!dateString) return '';
-    const d = new Date(dateString);
-    return `${d.getDate()} ${this.getMonth(dateString)} ${d.getFullYear()}`;
+    return formatDateShort(dateString);
   }
 
   /**
@@ -445,11 +459,14 @@ export class Register implements OnInit {
    * @returns A twelve-hour time with AM or PM, or an empty string for no time.
    */
   formatTime(timeString: string): string {
-    if (!timeString) return '';
-    const [hours, minutes] = timeString.split(':');
-    const hour = parseInt(hours);
-    const ampm = hour >= 12 ? 'PM' : 'AM';
-    const hour12 = hour % 12 || 12;
-    return `${hour12}:${minutes} ${ampm}`;
+    return formatTime(timeString);
+  }
+  /**
+   * Calculate the ticket total for the summary and confirmation.
+   * @returns The amount in Australian dollars, rounded to cents.
+   */
+  totalCost(): number {
+    return this.event && Number.isInteger(this.form.num_tickets) && this.form.num_tickets > 0
+      ? Math.round(this.event.event_ticket_price * this.form.num_tickets * 100) / 100 : 0;
   }
 }

@@ -11,7 +11,7 @@ import { Component } from '@angular/core';
     <footer class="footer">
       <div class="footer-content">
         <p><strong>Students Helper</strong> - Gold Coast Charity Organization</p>
-        <p>Contact: info@studentshelper.org | Phone: (07) 5555-1234</p>
+        <p>Contact: media@studentshelper.org | Phone: 07 2486 3179</p>
         <p>&copy; 2026 Students Helper. All rights reserved.</p>
       </div>
     </footer>

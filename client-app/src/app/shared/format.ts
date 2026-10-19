@@ -47,6 +47,9 @@ export function parseSqlDate(value: string | null | undefined): Date | null {
 
 /**
  * Day number for the date badge, e.g. "05" -> "5".
+ *
+ * @param value - The value returned by the API.
+ * @returns The formatted display value.
  */
 export function dayOfMonth(value: string): string {
   const date = parseSqlDate(value);
@@ -55,6 +58,9 @@ export function dayOfMonth(value: string): string {
 
 /**
  * Short month for the date badge, e.g. "NOV".
+ *
+ * @param value - The value returned by the API.
+ * @returns The formatted display value.
  */
 export function monthAbbr(value: string): string {
   const date = parseSqlDate(value);
@@ -63,6 +69,9 @@ export function monthAbbr(value: string): string {
 
 /**
  * Formats a date as "Thursday, 5 November 2026".
+ *
+ * @param value - The value returned by the API.
+ * @returns The formatted display value.
  */
 export function formatDateLong(value: string): string {
   const date = parseSqlDate(value);
@@ -77,6 +86,9 @@ export function formatDateLong(value: string): string {
 
 /**
  * Formats a date as "5 Nov 2026".
+ *
+ * @param value - The value returned by the API.
+ * @returns The formatted display value.
  */
 export function formatDateShort(value: string | null | undefined): string {
   const date = parseSqlDate(value);
@@ -91,6 +103,9 @@ export function formatDateShort(value: string | null | undefined): string {
 
 /**
  * Formats a MySQL time ("18:30:00") as "6:30 PM".
+ *
+ * @param value - The value returned by the API.
+ * @returns The formatted display value.
  */
 export function formatTime(value: string | null | undefined): string {
   if (!value) {
@@ -113,6 +128,9 @@ export function formatTime(value: string | null | undefined): string {
 
 /**
  * Formats a timestamp as "16 Oct 2026, 3:40 PM".
+ *
+ * @param value - The value returned by the API.
+ * @returns The formatted display value.
  */
 export function formatDateTime(value: string | null | undefined): string {
   const date = parseSqlDate(value);
@@ -132,6 +150,10 @@ export function formatDateTime(value: string | null | undefined): string {
 
 /**
  * Cuts a long description to a fixed length.
+ *
+ * @param text - The original description.
+ * @param maxLength - The maximum number of characters.
+ * @returns The formatted display value.
  */
 export function truncate(text: string, maxLength: number): string {
   if (!text) {
@@ -143,6 +165,9 @@ export function truncate(text: string, maxLength: number): string {
 
 /**
  * Formats a number as Australian dollars, e.g. "$1,250.00".
+ *
+ * @param value - The value returned by the API.
+ * @returns The formatted display value.
  */
 export function formatMoney(value: number | string | null | undefined): string {
   const amount = Number(value || 0);

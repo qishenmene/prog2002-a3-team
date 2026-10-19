@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ViewChild, ElementRef } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { Header } from './components/header/header';
 import { Nav } from './components/nav/nav';
@@ -13,9 +13,10 @@ import { Footer } from './components/footer/footer';
   standalone: true,
   imports: [RouterOutlet, Header, Nav, Footer],
   template: `
+    <a class="skip-link" href="#main-content" (click)="focusContent($event)">Skip to content</a>
     <app-header></app-header>
     <app-nav></app-nav>
-    <main class="main-content">
+    <main #mainContent id="main-content" class="main-content" tabindex="-1">
       <router-outlet></router-outlet>
     </main>
     <app-footer></app-footer>
@@ -30,5 +31,15 @@ import { Footer } from './components/footer/footer';
   `]
 })
 export class App {
-  title = 'Charity Events Client';
+  @ViewChild('mainContent') mainContent?: ElementRef<HTMLElement>;
+
+  /**
+   * Move keyboard focus to the page content without changing the route.
+   * @param event - The skip link click.
+   * @returns void
+   */
+  focusContent(event: globalThis.Event): void {
+    event.preventDefault();
+    this.mainContent?.nativeElement.focus();
+  }
 }

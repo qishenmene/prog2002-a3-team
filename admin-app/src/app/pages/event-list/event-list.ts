@@ -237,12 +237,17 @@ export class EventList implements OnInit {
 
   constructor(private apiService: ApiService, private cdr: ChangeDetectorRef) {}
 
+  /**
+   * Load the administrative event list.
+   * @returns void
+   */
   ngOnInit(): void {
     this.loadEvents();
   }
 
   /**
    * Load every event (any date, any availability) from the admin endpoint.
+   * @returns void
    */
   loadEvents(): void {
     this.loading = true;
@@ -267,7 +272,8 @@ export class EventList implements OnInit {
    * Ask for confirmation, then delete the given event.
    * The backend rejects deletion when registrations exist; its message
    * is displayed verbatim in the error banner above the table.
-   * @param event The event to delete
+   * @param event - The event to delete.
+   * @returns void
    */
   deleteEvent(event: Event): void {
     const confirmed = window.confirm(
