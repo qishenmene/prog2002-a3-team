@@ -374,7 +374,7 @@ export class EventForm implements OnInit {
     event_availability: 'Available'
   };
 
-  constructor(private destroyRef: DestroyRef, 
+  constructor(private destroyRef: DestroyRef,
     private apiService: ApiService,
     private route: ActivatedRoute,
     private router: Router,
@@ -416,8 +416,7 @@ export class EventForm implements OnInit {
 
   /**
    * Fetch the existing event and pre-fill the form (edit mode only).
-   * The API returns the date as an ISO string and the time as HH:MM:SS,
-   * so both are trimmed to fit the date/time inputs.
+   * Date and time strings are trimmed to fit the date/time inputs.
    * Registrations are requested only after the event has been found.
    * @param id - The event ID.
    * @returns void

@@ -127,7 +127,7 @@ export class ApiService {
   /**
    * Submit a new registration
    * @param registration The registration data
-   * @returns Observable of the created registration
+   * @returns An observable containing the saved registration ID and confirmation message.
    */
   submitRegistration(registration: Registration): Observable<RegistrationResponse> {
     return this.http.post<RegistrationResponse>(`${this.apiUrl}/registrations`, registration);

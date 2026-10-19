@@ -4,6 +4,12 @@
  */
 
 /**
+ * @typedef {Object} EventValidationResult
+ * @property {Object} [value] - Normalised fields when validation succeeds.
+ * @property {string} [error] - The first validation message for invalid input.
+ */
+
+/**
  * Reads today's calendar date in Queensland, where the events take place.
  * @returns {string} The current Brisbane date in YYYY-MM-DD format.
  */
@@ -44,7 +50,7 @@ function validDate(value) {
  * Checks and normalises a complete create or update payload.
  * @param {unknown} body - The JSON request body.
  * @param {boolean} editing - Whether an availability value is required.
- * @returns {{value?: Object, error?: string}} Normalised fields or a validation message.
+ * @returns {EventValidationResult} Normalised fields or a validation message.
  */
 function validateEvent(body, editing) {
     if (!body || typeof body !== "object" || Array.isArray(body)) {

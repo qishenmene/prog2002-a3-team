@@ -298,7 +298,7 @@ export class EventDetail implements OnInit {
   loading = true;
   error: string | null = null;
 
-  constructor(private destroyRef: DestroyRef, 
+  constructor(private destroyRef: DestroyRef,
     private route: ActivatedRoute,
     private apiService: ApiService,
     private cdr: ChangeDetectorRef

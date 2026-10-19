@@ -1,2 +1,5 @@
 node_modules/
 api/db-details.js
+docs/generated/
+submission/
+database/charityevents-cpanel.sql

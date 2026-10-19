@@ -1,0 +1,90 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1260" height="1030" viewBox="0 0 1260 1030" role="img" aria-labelledby="title desc">
+<title id="title">Students Helper interface storyboards</title><desc id="desc">Six as-built wireframes show the home, search, details, registration, administration list and event form layouts.</desc>
+<rect width="1260" height="1030" fill="#f6f1e8"/>
+<text x="30" y="42" font-family="Arial,sans-serif" font-size="25" fill="#28513e">Students Helper — interface storyboards</text>
+<text x="30" y="68" font-family="Arial,sans-serif" font-size="14" fill="#625d57">As-built layouts · shared navigation and feedback states · 19 October 2026</text>
+<rect x="30" y="98" width="380" height="430" rx="8" fill="#fffdf9" stroke="#ddd5ca"/>
+<text x="48" y="128" font-family="Arial,sans-serif" font-size="16" font-weight="bold" fill="#28513e">01  HOME</text>
+<rect x="46" y="146" width="348" height="38" fill="#28513e"/>
+<text x="58" y="170" font-family="Arial,sans-serif" font-size="13" fill="white">Header / common navigation</text>
+<rect x="48" y="204" width="344" height="44" rx="3" fill="#f6f1e8" stroke="#ddd5ca"/>
+<text x="58" y="231" font-family="Arial,sans-serif" font-size="13" fill="#333333">Introduction and Find an Event</text>
+<rect x="48" y="261" width="344" height="44" rx="3" fill="#f6f1e8" stroke="#ddd5ca"/>
+<text x="58" y="288" font-family="Arial,sans-serif" font-size="13" fill="#333333">Next upcoming event</text>
+<rect x="48" y="318" width="344" height="44" rx="3" fill="#f6f1e8" stroke="#ddd5ca"/>
+<text x="58" y="345" font-family="Arial,sans-serif" font-size="13" fill="#333333">Organisation and contact details</text>
+<rect x="48" y="375" width="344" height="44" rx="3" fill="#f6f1e8" stroke="#ddd5ca"/>
+<text x="58" y="402" font-family="Arial,sans-serif" font-size="13" fill="#333333">Upcoming event cards</text>
+<rect x="48" y="432" width="344" height="44" rx="3" fill="#f6f1e8" stroke="#ddd5ca"/>
+<text x="58" y="459" font-family="Arial,sans-serif" font-size="13" fill="#333333">Footer</text>
+<rect x="440" y="98" width="380" height="430" rx="8" fill="#fffdf9" stroke="#ddd5ca"/>
+<text x="458" y="128" font-family="Arial,sans-serif" font-size="16" font-weight="bold" fill="#28513e">02  SEARCH</text>
+<rect x="456" y="146" width="348" height="38" fill="#28513e"/>
+<text x="468" y="170" font-family="Arial,sans-serif" font-size="13" fill="white">Header / common navigation</text>
+<rect x="458" y="204" width="344" height="44" rx="3" fill="#f6f1e8" stroke="#ddd5ca"/>
+<text x="468" y="231" font-family="Arial,sans-serif" font-size="13" fill="#333333">Date | Location | Category</text>
+<rect x="458" y="261" width="344" height="44" rx="3" fill="#f6f1e8" stroke="#ddd5ca"/>
+<text x="468" y="288" font-family="Arial,sans-serif" font-size="13" fill="#333333">Search | Clear</text>
+<rect x="458" y="318" width="344" height="44" rx="3" fill="#f6f1e8" stroke="#ddd5ca"/>
+<text x="468" y="345" font-family="Arial,sans-serif" font-size="13" fill="#333333">Result count / empty feedback</text>
+<rect x="458" y="375" width="344" height="44" rx="3" fill="#f6f1e8" stroke="#ddd5ca"/>
+<text x="468" y="402" font-family="Arial,sans-serif" font-size="13" fill="#333333">Shared event cards</text>
+<rect x="458" y="432" width="344" height="44" rx="3" fill="#f6f1e8" stroke="#ddd5ca"/>
+<text x="468" y="459" font-family="Arial,sans-serif" font-size="13" fill="#333333">Footer</text>
+<rect x="850" y="98" width="380" height="430" rx="8" fill="#fffdf9" stroke="#ddd5ca"/>
+<text x="868" y="128" font-family="Arial,sans-serif" font-size="16" font-weight="bold" fill="#28513e">03  EVENT DETAILS</text>
+<rect x="866" y="146" width="348" height="38" fill="#28513e"/>
+<text x="878" y="170" font-family="Arial,sans-serif" font-size="13" fill="white">Header / common navigation</text>
+<rect x="868" y="204" width="344" height="44" rx="3" fill="#f6f1e8" stroke="#ddd5ca"/>
+<text x="878" y="231" font-family="Arial,sans-serif" font-size="13" fill="#333333">Date badge / event heading</text>
+<rect x="868" y="261" width="344" height="44" rx="3" fill="#f6f1e8" stroke="#ddd5ca"/>
+<text x="878" y="288" font-family="Arial,sans-serif" font-size="13" fill="#333333">Location / time / ticket price</text>
+<rect x="868" y="318" width="344" height="44" rx="3" fill="#f6f1e8" stroke="#ddd5ca"/>
+<text x="878" y="345" font-family="Arial,sans-serif" font-size="13" fill="#333333">Description / event-date weather</text>
+<rect x="868" y="375" width="344" height="44" rx="3" fill="#f6f1e8" stroke="#ddd5ca"/>
+<text x="878" y="402" font-family="Arial,sans-serif" font-size="13" fill="#333333">Fundraising progress / Register</text>
+<rect x="868" y="432" width="344" height="44" rx="3" fill="#f6f1e8" stroke="#ddd5ca"/>
+<text x="878" y="459" font-family="Arial,sans-serif" font-size="13" fill="#333333">Newest registration records</text>
+<rect x="30" y="558" width="380" height="430" rx="8" fill="#fffdf9" stroke="#ddd5ca"/>
+<text x="48" y="588" font-family="Arial,sans-serif" font-size="16" font-weight="bold" fill="#28513e">04  REGISTRATION</text>
+<rect x="46" y="606" width="348" height="38" fill="#28513e"/>
+<text x="58" y="630" font-family="Arial,sans-serif" font-size="13" fill="white">Header / common navigation</text>
+<rect x="48" y="664" width="344" height="44" rx="3" fill="#f6f1e8" stroke="#ddd5ca"/>
+<text x="58" y="691" font-family="Arial,sans-serif" font-size="13" fill="#333333">Selected event summary</text>
+<rect x="48" y="721" width="344" height="44" rx="3" fill="#f6f1e8" stroke="#ddd5ca"/>
+<text x="58" y="748" font-family="Arial,sans-serif" font-size="13" fill="#333333">Name / Email / optional Phone</text>
+<rect x="48" y="778" width="344" height="44" rx="3" fill="#f6f1e8" stroke="#ddd5ca"/>
+<text x="58" y="805" font-family="Arial,sans-serif" font-size="13" fill="#333333">Whole-number tickets / total</text>
+<rect x="48" y="835" width="344" height="44" rx="3" fill="#f6f1e8" stroke="#ddd5ca"/>
+<text x="58" y="862" font-family="Arial,sans-serif" font-size="13" fill="#333333">Submit / server feedback</text>
+<rect x="48" y="892" width="344" height="44" rx="3" fill="#f6f1e8" stroke="#ddd5ca"/>
+<text x="58" y="919" font-family="Arial,sans-serif" font-size="13" fill="#333333">Confirmation ID and navigation</text>
+<rect x="440" y="558" width="380" height="430" rx="8" fill="#fffdf9" stroke="#ddd5ca"/>
+<text x="458" y="588" font-family="Arial,sans-serif" font-size="16" font-weight="bold" fill="#28513e">05  ADMIN LIST</text>
+<rect x="456" y="606" width="348" height="38" fill="#28513e"/>
+<text x="468" y="630" font-family="Arial,sans-serif" font-size="13" fill="white">Admin header / navigation</text>
+<rect x="458" y="664" width="344" height="44" rx="3" fill="#f6f1e8" stroke="#ddd5ca"/>
+<text x="468" y="691" font-family="Arial,sans-serif" font-size="13" fill="#333333">Create Event</text>
+<rect x="458" y="721" width="344" height="44" rx="3" fill="#f6f1e8" stroke="#ddd5ca"/>
+<text x="468" y="748" font-family="Arial,sans-serif" font-size="13" fill="#333333">Text and status filters</text>
+<rect x="458" y="778" width="344" height="44" rx="3" fill="#f6f1e8" stroke="#ddd5ca"/>
+<text x="468" y="805" font-family="Arial,sans-serif" font-size="13" fill="#333333">All events / registration counts</text>
+<rect x="458" y="835" width="344" height="44" rx="3" fill="#f6f1e8" stroke="#ddd5ca"/>
+<text x="468" y="862" font-family="Arial,sans-serif" font-size="13" fill="#333333">Edit / Delete or protected state</text>
+<rect x="458" y="892" width="344" height="44" rx="3" fill="#f6f1e8" stroke="#ddd5ca"/>
+<text x="468" y="919" font-family="Arial,sans-serif" font-size="13" fill="#333333">Admin footer</text>
+<rect x="850" y="558" width="380" height="430" rx="8" fill="#fffdf9" stroke="#ddd5ca"/>
+<text x="868" y="588" font-family="Arial,sans-serif" font-size="16" font-weight="bold" fill="#28513e">06  ADMIN FORM</text>
+<rect x="866" y="606" width="348" height="38" fill="#28513e"/>
+<text x="878" y="630" font-family="Arial,sans-serif" font-size="13" fill="white">Admin header / navigation</text>
+<rect x="868" y="664" width="344" height="44" rx="3" fill="#f6f1e8" stroke="#ddd5ca"/>
+<text x="878" y="691" font-family="Arial,sans-serif" font-size="13" fill="#333333">Create or Edit Event</text>
+<rect x="868" y="721" width="344" height="44" rx="3" fill="#f6f1e8" stroke="#ddd5ca"/>
+<text x="878" y="748" font-family="Arial,sans-serif" font-size="13" fill="#333333">Required event fields</text>
+<rect x="868" y="778" width="344" height="44" rx="3" fill="#f6f1e8" stroke="#ddd5ca"/>
+<text x="878" y="805" font-family="Arial,sans-serif" font-size="13" fill="#333333">Optional coordinates / Save</text>
+<rect x="868" y="835" width="344" height="44" rx="3" fill="#f6f1e8" stroke="#ddd5ca"/>
+<text x="878" y="862" font-family="Arial,sans-serif" font-size="13" fill="#333333">Existing registrations in edit mode</text>
+<rect x="868" y="892" width="344" height="44" rx="3" fill="#f6f1e8" stroke="#ddd5ca"/>
+<text x="878" y="919" font-family="Arial,sans-serif" font-size="13" fill="#333333">Error / success / return to list</text>
+</svg>

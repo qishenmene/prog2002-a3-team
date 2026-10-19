@@ -7,7 +7,7 @@
  *   3. /       - the Angular client-side website (built output), falling back
  *                to the legacy "clientside" pages from Assessment 2.
  *
- * @author Shixiang Tang (A2), Jihan Qu (A3)
+ * @author Shixiang Tang, Jihan Qu
  * @version 2.0
  * @since 2026-10-01
  * @updated 2026-10-17

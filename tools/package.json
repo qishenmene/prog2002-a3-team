@@ -1,0 +1,15 @@
+{
+  "name": "students-helper-documentation",
+  "private": true,
+  "scripts": {
+    "docs:api": "jsdoc -c jsdoc.json",
+    "docs:client": "typedoc --tsconfig ../client-app/tsconfig.app.json --entryPointStrategy expand ../client-app/src/app --out ../docs/generated/client --name \"Students Helper - Client\"",
+    "docs:admin": "typedoc --tsconfig ../admin-app/tsconfig.app.json --entryPointStrategy expand ../admin-app/src/app --out ../docs/generated/admin --name \"Students Helper - Administration\"",
+    "docs": "npm run docs:api && npm run docs:client && npm run docs:admin"
+  },
+  "devDependencies": {
+    "jsdoc": "4.0.5",
+    "typedoc": "0.28.20",
+    "typescript": "6.0.3"
+  }
+}

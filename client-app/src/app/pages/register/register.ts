@@ -364,7 +364,7 @@ export class Register implements OnInit {
   submitted = false;
   submitError: string | null = null;
 
-  constructor(private destroyRef: DestroyRef, 
+  constructor(private destroyRef: DestroyRef,
     private route: ActivatedRoute,
     private apiService: ApiService,
     private cdr: ChangeDetectorRef

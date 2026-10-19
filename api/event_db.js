@@ -1,11 +1,10 @@
 /**
  * Creates the database connection for the Charity Events project.
  *
- * Credentials come from db-details.js during local development and can be
- * overridden with environment variables on the cPanel server, so the file that
- * holds the password never has to be committed to GitHub.
+ * Reads private connection settings from the ignored db-details.js file.
+ * Environment variables take priority when they are configured.
  *
- * @author Shixiang Tang (A2), Jihan Qu (A3)
+ * @author Shixiang Tang, Jihan Qu
  * @version 2.0
  * @since 2026-10-04
  * @updated 2026-10-17

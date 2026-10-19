@@ -53,7 +53,7 @@ export function parseSqlDate(value: string | null | undefined): Date | null {
  * Day number for the date badge, e.g. "05" -> "5".
  *
  * @param value - The value returned by the API.
- * @returns The formatted display value.
+ * @returns The day without a leading zero, or an empty string for an invalid date.
  */
 export function dayOfMonth(value: string): string {
   const date = parseSqlDate(value);
@@ -64,7 +64,7 @@ export function dayOfMonth(value: string): string {
  * Short month for the date badge, e.g. "NOV".
  *
  * @param value - The value returned by the API.
- * @returns The formatted display value.
+ * @returns The uppercase month abbreviation, or an empty string for an invalid date.
  */
 export function monthAbbr(value: string): string {
   const date = parseSqlDate(value);
@@ -75,7 +75,7 @@ export function monthAbbr(value: string): string {
  * Formats a date as "Thursday, 5 November 2026".
  *
  * @param value - The value returned by the API.
- * @returns The formatted display value.
+ * @returns The weekday, day, month and year, or the supplied text if parsing fails.
  */
 export function formatDateLong(value: string): string {
   const date = parseSqlDate(value);
@@ -92,7 +92,7 @@ export function formatDateLong(value: string): string {
  * Formats a date as "5 Nov 2026".
  *
  * @param value - The value returned by the API.
- * @returns The formatted display value.
+ * @returns The day, abbreviated month and year, the unparseable text, or an empty string for missing input.
  */
 export function formatDateShort(value: string | null | undefined): string {
   const date = parseSqlDate(value);
@@ -109,7 +109,7 @@ export function formatDateShort(value: string | null | undefined): string {
  * Formats a MySQL time ("18:30:00") as "6:30 PM".
  *
  * @param value - The value returned by the API.
- * @returns The formatted display value.
+ * @returns The twelve-hour time, the original text when incomplete, or an empty string.
  */
 export function formatTime(value: string | null | undefined): string {
   if (!value) {
@@ -134,7 +134,7 @@ export function formatTime(value: string | null | undefined): string {
  * Formats a timestamp as "16 Oct 2026, 3:40 PM".
  *
  * @param value - The value returned by the API.
- * @returns The formatted display value.
+ * @returns The date and time, or the supplied text if parsing fails.
  */
 export function formatDateTime(value: string | null | undefined): string {
   const date = parseSqlDate(value);
@@ -157,7 +157,7 @@ export function formatDateTime(value: string | null | undefined): string {
  *
  * @param text - The original description.
  * @param maxLength - The maximum number of characters.
- * @returns The formatted display value.
+ * @returns The original text, or the shortened text followed by three dots.
  */
 export function truncate(text: string, maxLength: number): string {
   if (!text) {
@@ -171,7 +171,7 @@ export function truncate(text: string, maxLength: number): string {
  * Formats a number as Australian dollars, e.g. "$1,250.00".
  *
  * @param value - The value returned by the API.
- * @returns The formatted display value.
+ * @returns The A$ amount with two decimal places and thousands separators.
  */
 export function formatMoney(value: number | string | null | undefined): string {
   const amount = Number(value || 0);

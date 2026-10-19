@@ -1,8 +1,8 @@
 /**
  * Defines API routes for the Charity Events project.
- * A3 UPDATE: Added CRUD operations and registrations endpoints
+ * Supports event management, registrations and event-date forecasts.
  *
- * @author Shixiang Tang (A2), Jihan Qu (A3 extensions)
+ * @author Shixiang Tang, Jihan Qu
  * @version 2.0
  * @since 2026-10-04
  * @updated 2026-10-19
@@ -22,8 +22,9 @@ const router = express.Router();
  *
  * @param {Object} req The HTTP request object from the client, currently unused.
  * @param {Object} res The HTTP response object used to send data back to the client.
+ * @returns {void} Sends upcoming events or a database error as JSON.
  */
-router.get("/events", function (req, res) {
+function listEvents(req, res) {
     connectionObj.query(
         "SELECT * FROM events JOIN categories ON events.event_category_id = categories.category_id WHERE event_date >= ? AND event_availability = 'Available' ORDER BY event_date, event_time, event_id;",
         [queenslandToday()],
@@ -37,15 +38,18 @@ router.get("/events", function (req, res) {
             res.json(results);
         }
     );
-});
+}
+
+router.get("/events", listEvents);
 
 /**
  * Receives a GET /categories request, retrieves category data from the database, and returns it to the client.
  *
  * @param {Object} req The HTTP request object from the client, currently unused.
  * @param {Object} res The HTTP response object used to send data back to the client.
+ * @returns {void} Sends event categories or a database error as JSON.
  */
-router.get("/categories", function (req, res) {
+function listCategories(req, res) {
     connectionObj.query(
         "SELECT * FROM categories;",
         function (err, results) {
@@ -58,15 +62,18 @@ router.get("/categories", function (req, res) {
             res.json(results);
         }
     );
-});
+}
+
+router.get("/categories", listCategories);
 
 /**
  * Searches for events using the provided search criteria.
  *
  * @param {Object} req The HTTP request object from the client.
  * @param {Object} res The HTTP response object used to send data back to the client.
+ * @returns {void} Sends event data or a validation error as JSON.
  */
-router.get("/events/search", function (req, res) {
+function searchEvents(req, res) {
     const date = req.query.date;
     const location = req.query.location;
     const category = req.query.category;
@@ -108,13 +115,18 @@ router.get("/events/search", function (req, res) {
             res.json(results);
         }
     );
-});
+}
+
+router.get("/events/search", searchEvents);
 
 /**
- * GET /events/all - Admin only: every event regardless of date or availability,
+ * GET /events/all - Administrative listing: every event regardless of date or availability,
  * with category name and registration count. Ordered by date descending.
+ * @param {Object} req - The incoming HTTP request.
+ * @param {Object} res - The JSON response sent to the caller.
+ * @returns {void} Sends all events with counts, or a database error as JSON.
  */
-router.get("/events/all", function (req, res) {
+function listAdminEvents(req, res) {
     connectionObj.query(
         `SELECT events.*, categories.category_name,
                 (SELECT COUNT(*) FROM registrations WHERE registrations.event_id = events.event_id) AS registration_count
@@ -129,7 +141,9 @@ router.get("/events/all", function (req, res) {
             res.json(results);
         }
     );
-});
+}
+
+router.get("/events/all", listAdminEvents);
 
 /**
  * Retrieves an event for the admin edit form, including past and suspended events.
@@ -222,13 +236,13 @@ function getEventDetails(req, res) {
 router.get("/events/:id", getEventDetails);
 
 /**
- * GET /events/:id/registrations - Get all registrations for a specific event (A3 NEW)
- * Returns registration list ordered by registration date (newest first)
+ * Lists the registrations for an event, newest first.
  *
  * @param {Object} req The HTTP request object from the client.
  * @param {Object} res The HTTP response object used to send data back to the client.
+ * @returns {void} Sends the registration list or an error as JSON.
  */
-router.get("/events/:id/registrations", function (req, res) {
+function listEventRegistrations(req, res) {
     const eventId = positiveId(req.params.id);
     if (!eventId) {
         return res.status(400).json({ message: "Event ID must be a positive integer." });
@@ -246,15 +260,18 @@ router.get("/events/:id/registrations", function (req, res) {
             res.json(results);
         }
     );
-});
+}
+
+router.get("/events/:id/registrations", listEventRegistrations);
 
 /**
- * POST /api/events - Create a new event (A3 NEW)
+ * Creates an available event from the validated form fields.
  *
  * @param {Object} req The HTTP request object from the client with event data in body.
  * @param {Object} res The HTTP response object used to send data back to the client.
+ * @returns {void} Sends event data or a validation error as JSON.
  */
-router.post("/events", function (req, res) {
+function createEvent(req, res) {
     const checked = validateEvent(req.body, false);
     if (checked.error) return res.status(400).json({ message: checked.error });
     const { event_name, event_date, event_time, event_address, event_purpose, event_description,
@@ -282,15 +299,18 @@ router.post("/events", function (req, res) {
             });
         }
     );
-});
+}
+
+router.post("/events", createEvent);
 
 /**
- * PUT /api/events/:id - Update an existing event (A3 NEW)
+ * Updates an event after validating its ID and form fields.
  *
  * @param {Object} req The HTTP request object from the client with updated event data in body.
  * @param {Object} res The HTTP response object used to send data back to the client.
+ * @returns {void} Sends event data or a validation error as JSON.
  */
-router.put("/events/:id", function (req, res) {
+function updateEvent(req, res) {
     const eventId = positiveId(req.params.id);
     if (!eventId) {
         return res.status(400).json({ message: "Event ID must be a positive integer." });
@@ -325,16 +345,18 @@ router.put("/events/:id", function (req, res) {
             });
         }
     );
-});
+}
+
+router.put("/events/:id", updateEvent);
 
 /**
- * DELETE /api/events/:id - Delete an event (A3 NEW)
- * Prevents deletion if event has registrations
+ * Deletes an event that has no registrations.
  *
  * @param {Object} req The HTTP request object from the client.
  * @param {Object} res The HTTP response object used to send data back to the client.
+ * @returns {void} Sends confirmation or the reason deletion was rejected as JSON.
  */
-router.delete("/events/:id", function (req, res) {
+function deleteEvent(req, res) {
     const eventId = positiveId(req.params.id);
     if (!eventId) {
         return res.status(400).json({ message: "Event ID must be a positive integer." });
@@ -384,7 +406,9 @@ router.delete("/events/:id", function (req, res) {
             );
         }
     );
-});
+}
+
+router.delete("/events/:id", deleteEvent);
 
 /**
  * Registers a visitor for an available event after validating the request body.

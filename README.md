@@ -1,173 +1,134 @@
-# PROG2002 Web Development II — Assessment 3
+# Students Helper — PROG2002 A3
 
-City charity events website for Southern Cross University. This is the
-Assessment 3 build, which extends the Assessment 2 project with a
-registrations feature, a full CRUD API, and a separate admin-side website.
+Students Helper lists charity events and accepts event registrations. The public website and administration website are Angular 22 applications that use one Express API and MySQL database.
 
-## Live deployment (SCU cPanel)
+## School websites
 
-| Website | URL |
+| Member | Public website | Administration |
+| --- | --- | --- |
+| Shixiang Tang | https://24832740.it.scu.edu.au/ | https://24832740.it.scu.edu.au/admin/ |
+| Jihan Qu | https://24832627.it.scu.edu.au/ | https://24832627.it.scu.edu.au/admin/ |
+
+The 24832740 deployment was checked on 19 October 2026. Each member maintains a separate deployment. The [verification record](docs/verification.md) documents the local checks.
+
+## Files
+
+| Folder | Contents |
 | --- | --- |
-| Client-side site | https://24832627.it.scu.edu.au/ |
-| Admin-side site | https://24832627.it.scu.edu.au/admin/ |
-| RESTful API | https://24832627.it.scu.edu.au/api/events |
+| `api/` | Express routes, validation and database connection |
+| `client-app/` | Home, search, event details and registration |
+| `admin-app/` | Event list, create and edit forms |
+| `clientside/` | A2 pages retained as a fallback |
+| `database/` | Database schema and sample data |
+| `docs/` | Design, ERD, storyboards, verification and video outline |
+| `tools/` | JSDoc and TypeDoc configuration |
 
-Each team member deploys their own copy under their own student domain.
+## Run locally
 
-## Repository structure
+Use Node.js 24 for the Angular builds. Import `database/charityevents_db.sql` into MySQL, then copy `api/db-details.example.js` to `api/db-details.js` and enter the local database details. The credentials file is ignored by Git.
 
-```
-api/          Express API (server.js, api-controller.js, event_db.js)
-client-app/   Angular client-side website (client-facing pages)
-admin-app/    Angular admin-side website (event management)
-clientside/   Legacy Assessment 2 static pages (fallback only)
-database/     charityevents_db.sql — schema plus seed data
-```
-
-Both Angular applications are TypeScript + standalone components, built with
-Angular v22.
-
-## Local development
+Run the API in its own terminal:
 
 ```bash
-# 1. Database
-mysql -u <user> -p < database/charityevents_db.sql
-
-# 2. API credentials
-cp api/db-details.example.js api/db-details.js   # then fill in your own values
-
-# 3. API (http://localhost:8080)
-cd api && npm install && npm start
-
-# 4. Client site (http://localhost:4200)
-cd client-app && npm install && npx ng serve
-
-# 5. Admin site (http://localhost:4300)
-cd admin-app && npm install && npx ng serve --port 4300
+cd api
+npm ci
+npm start
 ```
 
-`api/db-details.js` is gitignored and must never be committed.
-
-## Deployment (cPanel)
-
-Deployment target is a SCU cPanel account with the **Setup Node.js App**
-feature (Passenger). Both websites and the API are served by a single Node
-process on one host: `/` is the client site, `/admin` is the admin site, and
-`/api` is the REST API.
-
-### 1. Build the Angular applications
+Run the public application from the repository root in another terminal:
 
 ```bash
-cd client-app && npx ng build --configuration production
-cd ../admin-app && npx ng build --configuration production --base-href /admin/
+cd client-app
+npm ci
+npm start
 ```
 
-Outputs:
+Run the administration application in a third terminal:
 
-- `client-app/dist/client-app/browser`
-- `admin-app/dist/admin-app/browser`
-
-The `--base-href /admin/` flag is required for the admin site — without it the
-built `index.html` points its assets at the domain root and the admin pages
-load blank.
-
-### 2. Prepare the deployment package
-
-The server application root (`a3app`) must contain:
-
+```bash
+cd admin-app
+npm ci
+npm start -- --port 4300
 ```
+
+The API listens on port 8080. The Angular development proxies forward `/api` requests from ports 4200 and 4300 to the API.
+
+## Deploy to cPanel
+
+Build both applications from the repository root:
+
+```bash
+cd client-app
+npm ci
+npm run build
+cd ../admin-app
+npm ci
+npm run build -- --base-href /admin/
+```
+
+The application directory on the school server has this structure:
+
+```text
 a3app/
-├── api/                                 server + controller + event_db + db-details.js
-├── client-app/dist/client-app/browser/  built client site
-├── admin-app/dist/admin-app/browser/    built admin site
-└── package.json                         copy of api/package.json (for npm install)
+  api/
+  client-app/dist/client-app/browser/
+  admin-app/dist/admin-app/browser/
+  package.json
+  package-lock.json
 ```
 
-> **Package with Python `zipfile` or 7-Zip — not PowerShell.**
-> PowerShell's `Compress-Archive` writes `\` as the zip path separator. Linux
-> extracts those entries as flat files whose names literally contain
-> backslashes (e.g. `api\server.js`), so the app never starts.
+The root `package.json` uses the dependencies from `api/package.json` and sets `api/server.js` as its startup file. The prepared deployment archive already has this structure.
 
-### 3. Import the database
+Create a database and database user in cPanel. Import the portable SQL export included with the submission package into the selected database. The portable export uses `utf8mb4_general_ci` for the school server. Create `api/db-details.js` on the server with that database's private connection details.
 
-Create a MySQL database and user in cPanel, then import
-`database/charityevents_db.sql` (phpMyAdmin or the command line).
+In **Setup Node.js App**, use:
 
-> **Collation fix:** the dump is a MySQL 8 export and uses the
-> `utf8mb4_0900_ai_ci` collation. The SCU server rejects it with
-> `Unknown collation`. Replace every occurrence with `utf8mb4_general_ci`
-> before importing:
-
-```bash
-sed 's/utf8mb4_0900_ai_ci/utf8mb4_general_ci/g' charityevents_db.sql > charityevents-import.sql
-```
-
-### 4. Create the Node.js application
-
-In cPanel go to **SOFTWARE → Setup Node.js App → Create Application**:
-
-| Field | Value |
+| Setting | Value |
 | --- | --- |
-| Node.js version | 18.x |
-| Application mode | Production |
+| Node.js version used for this deployment | 18.20.8 |
+| Mode | Production |
 | Application root | `a3app` |
-| Application URL | your domain, path left empty |
-| Application startup file | `api/server.js` |
+| Application URL | The student's domain root |
+| Startup file | `api/server.js` |
 
-After creating the application:
+Run NPM Install and restart the application. Express serves the public application at `/`, administration at `/admin/`, and JSON endpoints at `/api`.
 
-1. Click **Run NPM Install** (installs `express` and `mysql2`).
-2. Click **Restart**.
+Check the homepage, search, an event, registration, `/admin/` and an admin edit deep link. Use a temporary event to check create, update and delete. An event with registrations must be protected from deletion.
 
-### 5. Database credentials on the server
+`api/event_db.js` reads `DB_HOST`, `DB_PORT`, `DB_USER`, `DB_PASSWORD` and `DB_NAME` when they are set; otherwise it reads `api/db-details.js`. The verified personal deployment uses the private file. Keep that file out of source archives and Git.
 
-`api/event_db.js` resolves credentials in this order:
+## Main endpoints
 
-1. environment variables `DB_HOST` / `DB_USER` / `DB_PASSWORD` / `DB_NAME`
-2. a local `api/db-details.js` file (gitignored)
+| Request | Result |
+| --- | --- |
+| `GET /api/events` | Available upcoming events |
+| `GET /api/events/search` | Events filtered by date, location and category |
+| `GET /api/events/:id` | Event details and registrations, newest first |
+| `GET /api/events/all` | All events and registration counts for administration |
+| `GET /api/admin/events/:id` | Editable event details, including past or suspended events |
+| `POST /api/registrations` | Saves a registration and returns its reference |
+| `POST /api/events` | Creates an event |
+| `PUT /api/events/:id` | Updates an event |
+| `DELETE /api/events/:id` | Deletes an event only when it has no registrations |
+| `GET /api/events/:id/weather` | Event-date forecast or an availability message |
 
-On the SCU cPanel, the **Environment variables** form did not propagate to the
-Node process — logging `process.env` at startup showed `DB_HOST`, `DB_USER`,
-`DB_NAME` and `DB_PASSWORD` as `undefined`, and the app crashed with
-`Access denied for user ''@'localhost'`. The deployment therefore ships a
-server-side `api/db-details.js` containing the database name, user and
-password. That file is gitignored, so credentials never reach the repository.
+Invalid input returns `400`; missing events return `404`. Duplicate registrations return `400`, while registration for a past or suspended event returns `409`. The database also enforces one registration per email per event and prevents deletion of events with registrations.
 
-### 6. Restarting the application
+Weather requests use the event's stored date and coordinates with `Australia/Brisbane` time. A missing forecast or provider error is displayed in the weather panel while the rest of the event page remains usable.
 
-Passenger reloads the app whenever `a3app/tmp/restart.txt` is modified, so the
-app can be restarted over FTP without opening the cPanel UI — re-upload any
-file to that path and wait a few seconds.
+## Project documentation
 
-### 7. Verify the deployment
+- [Design and ERD](docs/project-design.md)
+- [Storyboards](docs/storyboards.svg)
+- [Verification](docs/verification.md)
+- [Video outline](docs/demo-guide.md)
+
+Generate the API, client and admin code references:
 
 ```bash
-curl https://<your-domain>/api/events                  # JSON array of events
-curl -o /dev/null -w "%{http_code}\n" https://<your-domain>/            # 200, client site
-curl -o /dev/null -w "%{http_code}\n" https://<your-domain>/admin/      # 200, admin site
-curl -o /dev/null -w "%{http_code}\n" https://<your-domain>/admin/edit/1  # 200, admin deep link
-curl -o /dev/null -w "%{http_code}\n" https://<your-domain>/event/3       # 200, client deep link
+cd tools
+npm ci
+npm run docs
 ```
 
-Then confirm the event endpoints end to end:
-
-| Request | Expected |
-| --- | --- |
-| `GET /api/events/:id` | `200` with event fields and a `registrations` array ordered newest first; `[]` when none exist |
-| `GET /api/admin/events/:id` | `200` for an existing event, including past or suspended events |
-| `POST /api/registrations` | `201` for valid input and an available event; `400` for invalid input or a duplicate registration, `404` for a missing event, `409` for an unavailable event |
-| `POST /api/events` | `201` with the new `event_id` |
-| `PUT /api/events/:id` | `200` |
-| `DELETE /api/events/:id` | `200` when the event has no registrations |
-| `DELETE /api/events/:id` (event has registrations) | `400`, deletion refused |
-| `GET /api/events/:id` after deletion | `404` |
-
-## Deployment troubleshooting
-
-| Symptom | Cause and fix |
-| --- | --- |
-| App returns `502 Incomplete response` | The Node process crashed at startup. `event_db.js` calls `connect()` at module load, so a bad database credentials file kills the app before it can respond. Check `api/db-details.js`. |
-| `Unknown collation: 'utf8mb4_0900_ai_ci'` | See step 3 — swap the collation for `utf8mb4_general_ci`. |
-| App never starts, files have odd names with `\` | The zip was built with PowerShell `Compress-Archive`. Repackage with Python `zipfile`. |
-| `/admin` loads blank, assets 404 | The admin app was built without `--base-href /admin/`. |
-| Environment variables appear to do nothing | Use `api/db-details.js` instead — see step 5. |
+The generated pages are written to `docs/generated/api`, `docs/generated/client` and `docs/generated/admin`. Source comments and generator settings are versioned; generated HTML is excluded from Git.

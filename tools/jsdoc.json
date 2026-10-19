@@ -1,0 +1,20 @@
+{
+  "source": {
+    "include": [
+      "../api/api-controller.js",
+      "../api/event_db.js",
+      "../api/event-validation.js",
+      "../api/weather.js",
+      "../api/server.js"
+    ]
+  },
+  "opts": {
+    "destination": "../docs/generated/api",
+    "recurse": false
+  },
+  "templates": {
+    "default": {
+      "outputSourceFiles": true
+    }
+  }
+}
