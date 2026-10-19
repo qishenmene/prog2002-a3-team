@@ -9,6 +9,7 @@
  */
 const eventDb = require("./event_db");
 const express = require("express");
+const { forecastForEvent } = require("./weather");
 const { positiveId, validDate, validateEvent, queenslandToday } = require("./event-validation");
 
 const connectionObj = eventDb.getConnection();
@@ -257,14 +258,14 @@ router.post("/events", function (req, res) {
     const checked = validateEvent(req.body, false);
     if (checked.error) return res.status(400).json({ message: checked.error });
     const { event_name, event_date, event_time, event_address, event_purpose, event_description,
-        event_ticket_price, event_goal_amount, event_category_id, event_organisation_id } = checked.value;
+        event_ticket_price, event_goal_amount, event_category_id, event_organisation_id, latitude, longitude } = checked.value;
 
-    const sql = `INSERT INTO events (event_name, event_date, event_time, event_address, event_purpose, event_description, event_ticket_price, event_goal_amount, event_goal_raised_amount, event_category_id, event_organisation_id, event_availability)
-                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0, ?, ?, 'Available')`;
+    const sql = `INSERT INTO events (event_name, event_date, event_time, event_address, event_purpose, event_description, event_ticket_price, event_goal_amount, event_goal_raised_amount, event_category_id, event_organisation_id, event_availability, latitude, longitude)
+                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0, ?, ?, 'Available', ?, ?)`;
 
     connectionObj.query(
         sql,
-        [event_name, event_date, event_time, event_address, event_purpose, event_description, event_ticket_price, event_goal_amount, event_category_id, event_organisation_id || 1],
+        [event_name, event_date, event_time, event_address, event_purpose, event_description, event_ticket_price, event_goal_amount, event_category_id, event_organisation_id, latitude ?? null, longitude ?? null],
         function (err, result) {
             if (err) {
                 if (err.code === "ER_NO_REFERENCED_ROW_2") {
@@ -297,13 +298,13 @@ router.put("/events/:id", function (req, res) {
     const checked = validateEvent(req.body, true);
     if (checked.error) return res.status(400).json({ message: checked.error });
     const { event_name, event_date, event_time, event_address, event_purpose, event_description,
-        event_ticket_price, event_goal_amount, event_category_id, event_availability } = checked.value;
+        event_ticket_price, event_goal_amount, event_category_id, event_availability, hasCoordinates, latitude, longitude } = checked.value;
 
-    const sql = `UPDATE events SET event_name=?, event_date=?, event_time=?, event_address=?, event_purpose=?, event_description=?, event_ticket_price=?, event_goal_amount=?, event_category_id=?, event_availability=? WHERE event_id=?`;
+    const sql = `UPDATE events SET event_name=?, event_date=?, event_time=?, event_address=?, event_purpose=?, event_description=?, event_ticket_price=?, event_goal_amount=?, event_category_id=?, event_availability=?, latitude=IF(?, ?, latitude), longitude=IF(?, ?, longitude) WHERE event_id=?`;
 
     connectionObj.query(
         sql,
-        [event_name, event_date, event_time, event_address, event_purpose, event_description, event_ticket_price, event_goal_amount, event_category_id, event_availability, eventId],
+        [event_name, event_date, event_time, event_address, event_purpose, event_description, event_ticket_price, event_goal_amount, event_category_id, event_availability, hasCoordinates, latitude ?? null, hasCoordinates, longitude ?? null, eventId],
         function (err, result) {
             if (err) {
                 if (err.code === "ER_NO_REFERENCED_ROW_2") {
@@ -476,5 +477,28 @@ function createRegistration(req, res) {
 }
 
 router.post("/registrations", createRegistration);
+
+/**
+ * Retrieves an independent forecast without blocking the event details response.
+ * @param {Object} req - The request containing the event ID.
+ * @param {Object} res - The response used for the forecast or error message.
+ * @returns {void} Sends forecast JSON, 400/404 for invalid events, or 502 on provider failure.
+ */
+function getEventWeather(req, res) {
+    const eventId = positiveId(req.params.id);
+    if (!eventId) return res.status(400).json({ message: "Event ID must be a positive integer." });
+    connectionObj.query("SELECT event_date, latitude, longitude FROM events WHERE event_id = ? AND event_availability = 'Available'", [eventId],
+        async function (err, events) {
+            if (err) return res.status(500).json({ message: "Unable to load the event location." });
+            if (!events.length) return res.status(404).json({ message: "Event not found." });
+            try {
+                res.json(await forecastForEvent(events[0]));
+            } catch (weatherError) {
+                console.error("Weather request failed:", weatherError.message);
+                res.status(502).json({ message: "The weather service is temporarily unavailable. Event registration is still available." });
+            }
+        });
+}
+router.get("/events/:id/weather", getEventWeather);
 
 module.exports = router;

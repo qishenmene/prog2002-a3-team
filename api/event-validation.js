@@ -82,6 +82,20 @@ function validateEvent(body, editing) {
     if (!["Available", "Suspended"].includes(value.event_availability)) {
         return { error: "Availability must be Available or Suspended." };
     }
+    value.hasCoordinates = Object.hasOwn(body, "latitude") || Object.hasOwn(body, "longitude");
+    if (value.hasCoordinates) {
+        const blank = input => input == null || input === "";
+        if (blank(body.latitude) !== blank(body.longitude)) return { error: "Provide both latitude and longitude, or leave both blank." };
+        if (blank(body.latitude)) { value.latitude = null; value.longitude = null; }
+        else {
+            for (const [field, limit] of [["latitude", 90], ["longitude", 180]]) {
+                const raw = body[field];
+                const coordinate = typeof raw === "number" || (typeof raw === "string" && raw.trim()) ? Number(raw) : NaN;
+                if (!Number.isFinite(coordinate) || Math.abs(coordinate) > limit) return { error: "Please enter a valid " + field + "." };
+                value[field] = Math.round(coordinate * 1000000) / 1000000;
+            }
+        }
+    }
     return { value };
 }
 

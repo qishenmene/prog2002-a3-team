@@ -52,6 +52,12 @@ export interface Category { category_id: number; category_name: string; }
 /** Confirmation returned after a registration has been saved. */
 export interface RegistrationResponse { message: string; registration_id: number; }
 
+/** A forecast for the event date, or an explanation of its availability. */
+export interface EventWeather {
+  state: 'available' | 'unavailable'; date: string; message?: string;
+  low?: number; high?: number; description?: string; timezone?: string; source?: string;
+}
+
 /**
  * API Service for communicating with the backend
  * Handles all HTTP requests to the charity events API
@@ -98,6 +104,15 @@ export class ApiService {
    */
   searchEvents(params: Record<string, string>): Observable<Event[]> {
     return this.http.get<Event[]>(`${this.apiUrl}/events/search`, { params });
+  }
+
+  /**
+   * Request an Open-Meteo forecast for the event date.
+   * @param eventId - The event whose location and date should be used.
+   * @returns An observable containing the forecast or its availability message.
+   */
+  getEventWeather(eventId: number): Observable<EventWeather> {
+    return this.http.get<EventWeather>(`${this.apiUrl}/events/${eventId}/weather`);
   }
 
   /**

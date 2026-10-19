@@ -1,5 +1,6 @@
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { dayOfMonth, monthAbbr, formatDateShort, formatDateTime, formatTime, formatMoney } from '../../shared/format';
+import { WeatherPanel } from '../../components/weather-panel/weather-panel';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { ApiService, Event, Registration } from '../../services/api.service';
@@ -11,7 +12,7 @@ import { ApiService, Event, Registration } from '../../services/api.service';
 @Component({
   selector: 'app-event-detail',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, RouterLink, WeatherPanel],
   template: `
     <div class="detail-container">
       <!-- Loading state -->
@@ -65,6 +66,8 @@ import { ApiService, Event, Registration } from '../../services/api.service';
               <h3>About This Event</h3>
               <p>{{ event.event_description }}</p>
             </div>
+
+            <app-weather-panel [eventId]="event.event_id"></app-weather-panel>
 
             <!-- Fundraising progress -->
             <div class="progress-section">

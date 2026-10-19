@@ -7,6 +7,7 @@ import { ApiService, Category, Registration } from '../../services/api.service';
 
 /** Editable fields; numeric controls are empty until staff enter a value. */
 interface EventFormModel {
+  latitude: number | null; longitude: number | null;
   event_name: string; event_date: string; event_time: string; event_address: string;
   event_purpose: string; event_description: string; event_ticket_price: number | null;
   event_goal_amount: number | null; event_category_id: number | null; event_availability: string;
@@ -107,6 +108,18 @@ interface EventFormModel {
             </select>
           </div>
 
+          <fieldset class="weather-location">
+            <legend>Weather location (optional)</legend>
+            <p>Enter both coordinates to show a forecast for the event location.</p>
+            <div class="field-row">
+              <div class="field"><label for="latitude">Latitude</label>
+                <input class="input" id="latitude" name="latitude" type="number" min="-90" max="90" step="0.000001" [(ngModel)]="form.latitude" /></div>
+              <div class="field"><label for="longitude">Longitude</label>
+                <input class="input" id="longitude" name="longitude" type="number" min="-180" max="180" step="0.000001" [(ngModel)]="form.longitude" /></div>
+            </div>
+            <p *ngIf="!coordinatesValid()" class="error-text" role="alert">Enter both coordinates, or leave both blank.</p>
+          </fieldset>
+
           <!-- Availability can only be changed on an existing event -->
           <div class="field" *ngIf="isEditMode">
             <label for="event_availability">Availability *</label>
@@ -119,7 +132,7 @@ interface EventFormModel {
 
           <div class="form-actions">
             <button type="submit" class="btn-submit"
-                    [disabled]="eventForm.invalid || saving">
+                    [disabled]="eventForm.invalid || !coordinatesValid() || saving">
               {{ saving ? 'Saving...' : (isEditMode ? 'Save Changes' : 'Create Event') }}
             </button>
             <a routerLink="/" class="btn-cancel">Cancel</a>
@@ -346,6 +359,7 @@ export class EventForm implements OnInit {
 
   /** Form model bound with ngModel. */
   form: EventFormModel = {
+    latitude: null, longitude: null,
     event_name: '',
     event_date: '',
     event_time: '',
@@ -413,6 +427,7 @@ export class EventForm implements OnInit {
     this.apiService.getEvent(id).subscribe({
       next: (event) => {
         this.form = {
+          latitude: event.latitude ?? null, longitude: event.longitude ?? null,
           event_name: event.event_name,
           event_date: event.event_date ? event.event_date.split('T')[0] : '',
           event_time: event.event_time ? event.event_time.substring(0, 5) : '',
@@ -472,7 +487,7 @@ export class EventForm implements OnInit {
    */
   onSubmit(eventForm: NgForm): void {
     eventForm.control.markAllAsTouched();
-    if (eventForm.invalid || this.saving) {
+    if (eventForm.invalid || !this.coordinatesValid() || this.saving) {
       return;
     }
     this.saving = true;
@@ -522,4 +537,9 @@ export class EventForm implements OnInit {
     this.cdr.detectChanges();
     console.error('Error saving event:', err);
   }
+  /**
+   * Check that an optional location contains both coordinates.
+   * @returns Whether both values are present or both are empty.
+   */
+  coordinatesValid(): boolean { return (this.form.latitude == null) === (this.form.longitude == null); }
 }

@@ -7,6 +7,8 @@ import { Observable } from 'rxjs';
  * Field names match the backend database columns exactly.
  */
 export interface Event {
+  latitude?: number | null;
+  longitude?: number | null;
   event_id: number;
   event_name: string;
   event_date: string;
