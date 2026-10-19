@@ -41,7 +41,7 @@ import { RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
       box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
     }
     .header-inner {
-      max-width: 1180px;
+      max-width: 1480px;
       margin: 0 auto;
       padding: 0 20px;
       min-height: 68px;
@@ -76,7 +76,7 @@ import { RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
     }
     .admin-main {
       flex: 1;
-      max-width: 1180px;
+      max-width: 1480px;
       width: 100%;
       margin: 0 auto;
       padding: 30px 20px;

@@ -162,6 +162,7 @@ import { ApiService, Event } from '../../services/api.service';
     }
     .events-table {
       width: 100%;
+      min-width: 1320px;
       border-collapse: collapse;
       font-size: 0.9rem;
     }
@@ -176,6 +177,10 @@ import { ApiService, Event } from '../../services/api.service';
       padding: 12px 14px;
       border-bottom: 1px solid var(--brand-soft);
       vertical-align: middle;
+      overflow-wrap: normal;
+    }
+    .events-table td:nth-child(2), .events-table td:nth-child(3) {
+      white-space: nowrap;
     }
     .events-table tbody tr:hover {
       background-color: #f7f8fa;
@@ -186,7 +191,8 @@ import { ApiService, Event } from '../../services/api.service';
       min-width: 180px;
     }
     .col-location {
-      max-width: 220px;
+      min-width: 190px;
+      max-width: 240px;
     }
     .col-center {
       text-align: center;
