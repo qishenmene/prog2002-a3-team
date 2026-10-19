@@ -19,7 +19,7 @@ import { RouterLink, RouterLinkActive } from '@angular/router';
   `,
   styles: [`
     .nav {
-      background-color: #2c3e50;
+      background-color: var(--dark);
       padding: 0;
     }
     .nav-list {
@@ -40,10 +40,10 @@ import { RouterLink, RouterLinkActive } from '@angular/router';
       transition: background-color 0.3s;
     }
     .nav-list a:hover {
-      background-color: #34495e;
+      background-color: var(--dark-soft);
     }
     .nav-list a.active {
-      background-color: #e74c3c;
+      background-color: var(--accent);
     }
   `]
 })

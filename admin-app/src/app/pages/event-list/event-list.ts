@@ -1,4 +1,6 @@
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { Component, DestroyRef, OnInit, ChangeDetectorRef } from '@angular/core';
+import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { ApiService, Event } from '../../services/api.service';
@@ -11,7 +13,7 @@ import { ApiService, Event } from '../../services/api.service';
 @Component({
   selector: 'app-event-list',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, FormsModule, RouterLink],
   template: `
     <div class="page-header">
       <h1>Events</h1>
@@ -19,40 +21,48 @@ import { ApiService, Event } from '../../services/api.service';
     </div>
 
     <!-- Delete / API error banner -->
-    <div *ngIf="deleteError" class="alert alert-error">
+    <div *ngIf="deleteError" class="alert alert-error" role="alert">
       {{ deleteError }}
     </div>
 
     <!-- Loading state -->
-    <div *ngIf="loading" class="loading">
+    <div *ngIf="loading" class="loading" role="status">
       <p>Loading events...</p>
     </div>
 
     <!-- Load error state -->
-    <div *ngIf="!loading && loadError" class="alert alert-error">
+    <div *ngIf="!loading && loadError" class="alert alert-error" role="alert">
       <p>{{ loadError }}</p>
       <button (click)="loadEvents()" class="btn-retry">Try Again</button>
     </div>
 
+    <section *ngIf="!loading && !loadError" class="list-tools" aria-label="Filter event list">
+      <div><label for="event-query">Find an event</label><input id="event-query" name="query" [(ngModel)]="query" placeholder="Name, location or category" /></div>
+      <div><label for="event-status">Status</label><select id="event-status" name="status" [(ngModel)]="statusFilter">
+        <option value="">All statuses</option><option>Available</option><option>Past</option><option>Suspended</option>
+      </select></div>
+      <p role="status">Showing {{ filteredEvents().length }} of {{ events.length }} events</p>
+    </section>
+
     <!-- Events table -->
-    <div *ngIf="!loading && !loadError && events.length > 0" class="table-card">
+    <div *ngIf="!loading && !loadError && events.length > 0" class="table-card" tabindex="0" role="region" aria-label="All charity events">
       <table class="events-table">
         <thead>
           <tr>
-            <th>Event Name</th>
-            <th>Date</th>
-            <th>Time</th>
-            <th>Category</th>
-            <th>Location</th>
-            <th>Price</th>
-            <th>Raised / Goal</th>
-            <th>Status</th>
-            <th>Registrations</th>
-            <th>Actions</th>
+            <th scope="col">Event Name</th>
+            <th scope="col">Date</th>
+            <th scope="col">Time</th>
+            <th scope="col">Category</th>
+            <th scope="col">Location</th>
+            <th scope="col">Price</th>
+            <th scope="col">Raised / Goal</th>
+            <th scope="col">Status</th>
+            <th scope="col">Registrations</th>
+            <th scope="col">Actions</th>
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let event of events">
+          <tr *ngFor="let event of filteredEvents()">
             <td class="col-name">{{ event.event_name }}</td>
             <td>{{ formatDate(event.event_date) }}</td>
             <td>{{ formatTime(event.event_time) }}</td>
@@ -71,19 +81,29 @@ import { ApiService, Event } from '../../services/api.service';
             <td class="col-center">{{ event.registration_count ?? 0 }}</td>
             <td class="col-actions">
               <a [routerLink]="['/edit', event.event_id]" class="btn-edit">Edit</a>
-              <button (click)="deleteEvent(event)" class="btn-delete">Delete</button>
+              <button (click)="deleteEvent(event)" class="btn-delete" [disabled]="(event.registration_count || 0) > 0 || deletingId !== null"
+                      [attr.aria-label]="'Delete ' + event.event_name">{{ deletingId === event.event_id ? 'Deleting...' : 'Delete' }}</button>
+              <span *ngIf="(event.registration_count || 0) > 0" class="protected-note">Protected: has registrations</span>
             </td>
           </tr>
         </tbody>
       </table>
     </div>
 
+    <p *ngIf="!loading && !loadError && events.length > 0 && filteredEvents().length === 0" role="status">No events match these filters. Try another name or status.</p>
     <!-- Empty state -->
     <div *ngIf="!loading && !loadError && events.length === 0" class="empty-state">
       <p>No events found.</p>
     </div>
   `,
   styles: [`
+    .list-tools { display: flex; flex-wrap: wrap; gap: 20px; align-items: flex-end; margin-bottom: 20px; padding: 20px; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; }
+    .list-tools label { display: block; font-weight: 600; margin-bottom: 6px; }
+    .list-tools input, .list-tools select { padding: 10px; border: 1px solid var(--border); border-radius: 5px; max-width: 100%; }
+    .list-tools p { margin: 0 0 8px; color: var(--muted); }
+    .protected-note { display: block; font-size: .75rem; color: var(--muted); margin-top: 8px; }
+    .table-card { overflow-x: auto; }
+
     .page-header {
       display: flex;
       justify-content: space-between;
@@ -92,11 +112,11 @@ import { ApiService, Event } from '../../services/api.service';
     }
     .page-header h1 {
       margin: 0;
-      color: #2c3e50;
+      color: var(--dark);
       font-size: 1.6rem;
     }
     .btn-create {
-      background-color: #27ae60;
+      background-color: var(--success);
       color: #ffffff;
       text-decoration: none;
       padding: 10px 20px;
@@ -105,7 +125,7 @@ import { ApiService, Event } from '../../services/api.service';
       transition: background-color 0.2s;
     }
     .btn-create:hover {
-      background-color: #1e8449;
+      background-color: var(--brand-dark);
     }
     .alert {
       padding: 14px 18px;
@@ -115,14 +135,14 @@ import { ApiService, Event } from '../../services/api.service';
     }
     .alert-error {
       background-color: #fdecea;
-      border-color: #c0392b;
+      border-color: var(--brand-dark);
       color: #8b2a21;
     }
     .alert-error p {
       margin: 0 0 10px;
     }
     .btn-retry {
-      background-color: #3498db;
+      background-color: var(--brand);
       color: #ffffff;
       border: none;
       padding: 8px 18px;
@@ -132,10 +152,10 @@ import { ApiService, Event } from '../../services/api.service';
     .loading, .empty-state {
       text-align: center;
       padding: 60px 20px;
-      color: #7f8c8d;
+      color: var(--muted);
     }
     .table-card {
-      background: #ffffff;
+      background: var(--surface);
       border-radius: 10px;
       box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
       overflow-x: auto;
@@ -146,7 +166,7 @@ import { ApiService, Event } from '../../services/api.service';
       font-size: 0.9rem;
     }
     .events-table th {
-      background-color: #34495e;
+      background-color: var(--dark-soft);
       color: #ffffff;
       text-align: left;
       padding: 12px 14px;
@@ -154,7 +174,7 @@ import { ApiService, Event } from '../../services/api.service';
     }
     .events-table td {
       padding: 12px 14px;
-      border-bottom: 1px solid #ecf0f1;
+      border-bottom: 1px solid var(--brand-soft);
       vertical-align: middle;
     }
     .events-table tbody tr:hover {
@@ -162,7 +182,7 @@ import { ApiService, Event } from '../../services/api.service';
     }
     .col-name {
       font-weight: 600;
-      color: #2c3e50;
+      color: var(--dark);
       min-width: 180px;
     }
     .col-location {
@@ -172,7 +192,7 @@ import { ApiService, Event } from '../../services/api.service';
       text-align: center;
     }
     .free-tag {
-      color: #e74c3c;
+      color: var(--brand);
       font-weight: 700;
     }
     .badge {
@@ -186,21 +206,21 @@ import { ApiService, Event } from '../../services/api.service';
     }
     .badge-available {
       background-color: #eafaf1;
-      color: #1e8449;
+      color: var(--brand-dark);
     }
     .badge-suspended {
       background-color: #fdecea;
-      color: #c0392b;
+      color: var(--brand-dark);
     }
     .badge-past {
-      background-color: #ecf0f1;
-      color: #7f8c8d;
+      background-color: var(--brand-soft);
+      color: var(--muted);
     }
     .col-actions {
       white-space: nowrap;
     }
     .btn-edit {
-      background-color: #3498db;
+      background-color: var(--brand);
       color: #ffffff;
       text-decoration: none;
       padding: 6px 14px;
@@ -211,7 +231,7 @@ import { ApiService, Event } from '../../services/api.service';
       transition: background-color 0.2s;
     }
     .btn-edit:hover {
-      background-color: #2980b9;
+      background-color: var(--brand-dark);
     }
     .btn-delete {
       background-color: #dc3545;
@@ -230,12 +250,15 @@ import { ApiService, Event } from '../../services/api.service';
   `]
 })
 export class EventList implements OnInit {
+  query = '';
+  statusFilter = '';
+  deletingId: number | null = null;
   events: Event[] = [];
   loading = true;
   loadError: string | null = null;
   deleteError: string | null = null;
 
-  constructor(private apiService: ApiService, private cdr: ChangeDetectorRef) {}
+  constructor(private destroyRef: DestroyRef, private apiService: ApiService, private cdr: ChangeDetectorRef) {}
 
   /**
    * Load the administrative event list.
@@ -253,7 +276,7 @@ export class EventList implements OnInit {
     this.loading = true;
     this.loadError = null;
 
-    this.apiService.getAllEvents().subscribe({
+    this.apiService.getAllEvents().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (data) => {
         this.events = data;
         this.loading = false;
@@ -276,6 +299,7 @@ export class EventList implements OnInit {
    * @returns void
    */
   deleteEvent(event: Event): void {
+    if (this.deletingId !== null || (event.registration_count || 0) > 0) return;
     const confirmed = window.confirm(
       `Are you sure you want to delete "${event.event_name}"? This action cannot be undone.`
     );
@@ -284,11 +308,14 @@ export class EventList implements OnInit {
     }
 
     this.deleteError = null;
-    this.apiService.deleteEvent(event.event_id).subscribe({
+    this.deletingId = event.event_id;
+    this.apiService.deleteEvent(event.event_id).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: () => {
+        this.deletingId = null;
         this.loadEvents();
       },
       error: (err) => {
+        this.deletingId = null;
         this.deleteError = err.error?.message || 'Failed to delete event. Please try again later.';
         this.cdr.detectChanges();
         console.error('Error deleting event:', err);
@@ -297,9 +324,8 @@ export class EventList implements OnInit {
   }
 
   /**
-   * Work out the display status of an event:
-   * 'Suspended' (red) when suspended, 'Past' (grey) when the event date
-   * has already passed, otherwise 'Available' (green).
+   * Determine availability using the Queensland calendar date.
+   * Suspended events keep their status regardless of the event date.
    * @param event The event to inspect
    * @returns An object with the badge label and CSS class
    */
@@ -307,11 +333,12 @@ export class EventList implements OnInit {
     if (event.event_availability === 'Suspended') {
       return { label: 'Suspended', cssClass: 'badge-suspended' };
     }
-    const eventDate = new Date(event.event_date);
-    eventDate.setHours(0, 0, 0, 0);
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    if (eventDate < today) {
+    const parts = new Intl.DateTimeFormat('en-CA', {
+      timeZone: 'Australia/Brisbane', year: 'numeric', month: '2-digit', day: '2-digit'
+    }).formatToParts(new Date());
+    const part = (type: string) => parts.find(item => item.type === type)!.value;
+    const today = part('year') + '-' + part('month') + '-' + part('day');
+    if (event.event_date.slice(0, 10) < today) {
       return { label: 'Past', cssClass: 'badge-past' };
     }
     return { label: 'Available', cssClass: 'badge-available' };
@@ -325,7 +352,7 @@ export class EventList implements OnInit {
   formatDate(dateString: string): string {
     if (!dateString) return '';
     const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-    const d = new Date(dateString);
+    const d = new Date(dateString.slice(0, 10) + 'T00:00:00');
     return `${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()}`;
   }
 
@@ -341,5 +368,14 @@ export class EventList implements OnInit {
     const ampm = hour >= 12 ? 'PM' : 'AM';
     const hour12 = hour % 12 || 12;
     return `${hour12}:${minutes} ${ampm}`;
+  }
+  /**
+   * Filter the loaded list without discarding events from the original data.
+   * @returns Events matching the selected text and status.
+   */
+  filteredEvents(): Event[] {
+    const term = this.query.trim().toLowerCase();
+    return this.events.filter(event => (!this.statusFilter || this.getStatus(event).label === this.statusFilter) &&
+      [event.event_name, event.event_address, event.category_name || ''].join(' ').toLowerCase().includes(term));
   }
 }

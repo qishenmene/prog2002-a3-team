@@ -3,7 +3,7 @@ import { RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
 
 /**
  * Root component of the Students Helper admin application.
- * Provides the dark admin-style header, navigation and footer shell,
+ * Provides the shared header, navigation and footer,
  * with routed pages rendered inside the main content area.
  */
 @Component({
@@ -14,8 +14,9 @@ import { RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
     <header class="admin-header">
       <div class="header-inner">
         <span class="brand">Students Helper — Admin</span>
-        <nav class="admin-nav">
-          <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">Events</a>
+        <nav class="admin-nav" aria-label="Administration">
+          <a routerLink="/" routerLinkActive="active" ariaCurrentWhenActive="page" [routerLinkActiveOptions]="{ exact: true }">Events</a>
+          <a routerLink="/create" routerLinkActive="active" ariaCurrentWhenActive="page">Create Event</a>
         </nav>
       </div>
     </header>
@@ -25,7 +26,7 @@ import { RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
     </main>
 
     <footer class="admin-footer">
-      <p>Students Helper Admin Panel &copy; 2026 — PROG2002 A3</p>
+      <p>Students Helper Administration &copy; 2026</p>
     </footer>
   `,
   styles: [`
@@ -35,7 +36,7 @@ import { RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
       min-height: 100vh;
     }
     .admin-header {
-      background-color: #2c3e50;
+      background-color: var(--dark);
       color: #ffffff;
       box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
     }
@@ -43,7 +44,11 @@ import { RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
       max-width: 1180px;
       margin: 0 auto;
       padding: 0 20px;
-      height: 60px;
+      min-height: 68px;
+      gap: 18px;
+      flex-wrap: wrap;
+      padding-top: 12px;
+      padding-bottom: 12px;
       display: flex;
       align-items: center;
       justify-content: space-between;
@@ -77,7 +82,7 @@ import { RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
       padding: 30px 20px;
     }
     .admin-footer {
-      background-color: #2c3e50;
+      background-color: var(--dark);
       color: rgba(255, 255, 255, 0.6);
       text-align: center;
       padding: 14px 20px;

@@ -1,5 +1,6 @@
-import { Component, OnInit, ChangeDetectorRef, ViewChild, ElementRef } from '@angular/core';
-import { dayOfMonth, monthAbbr, formatDateShort, formatDateTime, formatTime, formatMoney } from '../../shared/format';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { Component, DestroyRef, OnInit, ChangeDetectorRef, ViewChild, ElementRef } from '@angular/core';
+import { dayOfMonth, monthAbbr, formatDateShort, formatDateTime, formatTime, formatMoney, isPastDate } from '../../shared/format';
 import { CommonModule } from '@angular/common';
 import { FormsModule, NgForm } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
@@ -16,6 +17,7 @@ import { ApiService, Event } from '../../services/api.service';
   imports: [CommonModule, FormsModule, RouterLink],
   template: `
     <div class="register-container">
+      <h2>Event Registration</h2>
       <!-- Loading state -->
       <div *ngIf="loading" class="loading" role="status">
         <p>Loading event information...</p>
@@ -37,14 +39,14 @@ import { ApiService, Event } from '../../services/api.service';
             <span class="month">{{ getMonth(event.event_date) }}</span>
           </div>
           <h4>{{ event.event_name }}</h4>
-          <p class="summary-row">📅 {{ formatDate(event.event_date) }}</p>
-          <p class="summary-row">🕐 {{ formatTime(event.event_time) }}</p>
-          <p class="summary-row">📍 {{ event.event_address }}</p>
+          <p class="summary-row">{{ formatDate(event.event_date) }}</p>
+          <p class="summary-row">{{ formatTime(event.event_time) }}</p>
+          <p class="summary-row">{{ event.event_address }}</p>
           <p class="summary-row price" *ngIf="event.event_ticket_price > 0">
-            🎫 {{ event.event_ticket_price | currency:'AUD':'symbol':'1.2-2' }} per ticket
+            {{ event.event_ticket_price | currency:'AUD':'symbol':'1.2-2' }} per ticket
           </p>
           <p class="summary-row price free" *ngIf="event.event_ticket_price === 0">
-            🎫 FREE entry
+            FREE entry
           </p>
         </div>
 
@@ -58,7 +60,8 @@ import { ApiService, Event } from '../../services/api.service';
             {{ submitError }}
           </div>
 
-          <form (ngSubmit)="submit(regForm)" #regForm="ngForm">
+          <form (ngSubmit)="submit(regForm)" #regForm="ngForm" [attr.aria-busy]="submitting">
+            <fieldset [disabled]="submitting" class="registration-fields">
             <div class="form-field">
               <label for="user_name">Full Name <span class="required">*</span></label>
               <input
@@ -69,8 +72,10 @@ import { ApiService, Event } from '../../services/api.service';
                 required maxlength="100" pattern=".*\\S.*" autocomplete="name"
                 #nameInput="ngModel"
                 [class.invalid]="nameInput.invalid && nameInput.touched"
+                [attr.aria-invalid]="nameInput.invalid && nameInput.touched"
+                [attr.aria-describedby]="nameInput.invalid && nameInput.touched ? 'name-error' : null"
               />
-              <span class="validation-error" *ngIf="nameInput.invalid && nameInput.touched">
+              <span id="name-error" class="validation-error" *ngIf="nameInput.invalid && nameInput.touched">
                 Please enter your full name.
               </span>
             </div>
@@ -86,8 +91,10 @@ import { ApiService, Event } from '../../services/api.service';
                 email maxlength="100" autocomplete="email"
                 #emailInput="ngModel"
                 [class.invalid]="emailInput.invalid && emailInput.touched"
+                [attr.aria-invalid]="emailInput.invalid && emailInput.touched"
+                [attr.aria-describedby]="emailInput.invalid && emailInput.touched ? 'email-error' : null"
               />
-              <span class="validation-error" *ngIf="emailInput.invalid && emailInput.touched">
+              <span id="email-error" class="validation-error" *ngIf="emailInput.invalid && emailInput.touched">
                 Please enter a valid email address.
               </span>
             </div>
@@ -115,8 +122,10 @@ import { ApiService, Event } from '../../services/api.service';
                 min="1" max="2147483647" step="1" pattern="[0-9]+"
                 #ticketsInput="ngModel"
                 [class.invalid]="ticketsInput.invalid && ticketsInput.touched"
+                [attr.aria-invalid]="ticketsInput.invalid && ticketsInput.touched"
+                [attr.aria-describedby]="ticketsInput.invalid && ticketsInput.touched ? 'tickets-error' : null"
               />
-              <span class="validation-error" *ngIf="ticketsInput.invalid && ticketsInput.touched">
+              <span id="tickets-error" class="validation-error" *ngIf="ticketsInput.invalid && ticketsInput.touched">
                 Enter a whole number of tickets, starting at 1.
               </span>
             </div>
@@ -130,6 +139,7 @@ import { ApiService, Event } from '../../services/api.service';
             >
               {{ submitting ? 'Submitting...' : 'Submit Registration' }}
             </button>
+            </fieldset>
           </form>
         </div>
 
@@ -153,20 +163,21 @@ import { ApiService, Event } from '../../services/api.service';
     </div>
   `,
   styles: [`
+    .registration-fields { border: 0; padding: 0; margin: 0; min-width: 0; }
     .register-container {
       padding: 20px 0;
     }
     .loading, .error-message {
       text-align: center;
       padding: 40px;
-      color: #7f8c8d;
+      color: var(--muted);
     }
     .error-message {
-      color: #e74c3c;
+      color: var(--brand);
     }
     .btn-back {
       display: inline-block;
-      background-color: #3498db;
+      background-color: var(--brand);
       color: white;
       text-decoration: none;
       padding: 10px 25px;
@@ -175,7 +186,7 @@ import { ApiService, Event } from '../../services/api.service';
     }
     .register-layout {
       display: grid;
-      grid-template-columns: 350px 1fr;
+      grid-template-columns: minmax(240px, .85fr) minmax(0, 1.4fr);
       gap: 25px;
       align-items: start;
     }
@@ -191,11 +202,11 @@ import { ApiService, Event } from '../../services/api.service';
       padding: 25px;
     }
     .event-summary h3, .form-card h3 {
-      color: #2c3e50;
+      color: var(--dark);
       margin-top: 0;
     }
     .summary-badge {
-      background: linear-gradient(135deg, #e74c3c, #c0392b);
+      background: linear-gradient(135deg, var(--brand), var(--brand-dark));
       color: white;
       width: 70px;
       padding: 12px 0;
@@ -216,31 +227,32 @@ import { ApiService, Event } from '../../services/api.service';
       margin-top: 3px;
     }
     .event-summary h4 {
-      color: #2c3e50;
+      color: var(--dark);
       margin: 0 0 15px;
       font-size: 1.2em;
     }
     .summary-row {
-      color: #7f8c8d;
+      color: var(--muted);
+      overflow-wrap: anywhere;
       font-size: 0.95em;
       margin: 8px 0;
     }
     .summary-row.price {
-      color: #27ae60;
+      color: var(--success);
       font-weight: bold;
     }
     .summary-row.price.free {
-      color: #e74c3c;
+      color: var(--brand);
     }
     .helper-text {
-      color: #7f8c8d;
+      color: var(--muted);
       font-size: 0.9em;
       margin-top: -5px;
     }
     .server-error {
       background-color: #fdf0ef;
-      border: 1px solid #e74c3c;
-      color: #c0392b;
+      border: 1px solid var(--danger);
+      color: var(--brand-dark);
       padding: 12px;
       border-radius: 5px;
       margin-bottom: 15px;
@@ -251,11 +263,11 @@ import { ApiService, Event } from '../../services/api.service';
     .form-field label {
       display: block;
       font-weight: bold;
-      color: #2c3e50;
+      color: var(--dark);
       margin-bottom: 6px;
     }
     .required {
-      color: #e74c3c;
+      color: var(--brand);
     }
     .form-field input {
       width: 100%;
@@ -266,20 +278,20 @@ import { ApiService, Event } from '../../services/api.service';
       box-sizing: border-box;
     }
     .form-field input:focus {
-      outline: none;
-      border-color: #3498db;
+      outline: 2px solid var(--brand);
+      border-color: var(--brand);
     }
     .form-field input.invalid {
-      border-color: #e74c3c;
+      border-color: var(--danger);
     }
     .validation-error {
-      color: #e74c3c;
+      color: var(--danger);
       font-size: 0.85em;
       margin-top: 5px;
       display: block;
     }
     .btn-submit {
-      background-color: #e74c3c;
+      background-color: var(--brand);
       color: white;
       border: none;
       padding: 14px 30px;
@@ -291,7 +303,7 @@ import { ApiService, Event } from '../../services/api.service';
       transition: background-color 0.3s;
     }
     .btn-submit:hover:not(:disabled) {
-      background-color: #c0392b;
+      background-color: var(--brand-dark);
     }
     .btn-submit:disabled {
       background-color: #bdc3c7;
@@ -303,7 +315,7 @@ import { ApiService, Event } from '../../services/api.service';
     .success-icon {
       width: 70px;
       height: 70px;
-      background-color: #27ae60;
+      background-color: var(--success);
       color: white;
       font-size: 2.5em;
       border-radius: 50%;
@@ -318,12 +330,13 @@ import { ApiService, Event } from '../../services/api.service';
     }
     .success-actions {
       display: flex;
+      flex-wrap: wrap;
       gap: 15px;
       justify-content: center;
       margin-top: 25px;
     }
     .btn-secondary {
-      background-color: #3498db;
+      background-color: var(--brand);
       color: white;
       text-decoration: none;
       padding: 10px 25px;
@@ -331,7 +344,7 @@ import { ApiService, Event } from '../../services/api.service';
       transition: background-color 0.3s;
     }
     .btn-secondary:hover {
-      background-color: #2980b9;
+      background-color: var(--brand-dark);
     }
   `]
 })
@@ -351,7 +364,7 @@ export class Register implements OnInit {
   submitted = false;
   submitError: string | null = null;
 
-  constructor(
+  constructor(private destroyRef: DestroyRef, 
     private route: ActivatedRoute,
     private apiService: ApiService,
     private cdr: ChangeDetectorRef
@@ -369,9 +382,10 @@ export class Register implements OnInit {
       return;
     }
 
-    this.apiService.getEvent(id).subscribe({
+    this.apiService.getEvent(id).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (data) => {
         this.event = data;
+        if (isPastDate(data.event_date)) this.loadError = 'Registration is closed because this event has already taken place.';
         this.loading = false;
         this.cdr.detectChanges();
       },
@@ -409,7 +423,7 @@ export class Register implements OnInit {
       user_email: this.form.user_email,
       user_phone: this.form.user_phone,
       num_tickets: this.form.num_tickets
-    }).subscribe({
+    }).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (response) => {
         this.registrationId = response.registration_id;
         this.submitted = true;

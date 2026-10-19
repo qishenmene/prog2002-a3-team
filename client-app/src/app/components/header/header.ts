@@ -17,19 +17,22 @@ import { Component } from '@angular/core';
   `,
   styles: [`
     .header {
-      background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
-      color: white;
-      padding: 30px 20px;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      color: var(--brand);
+      padding: 18px 20px;
       text-align: center;
     }
     .header-content h1 {
       margin: 0;
-      font-size: 2.5em;
+      font-family: Georgia, serif;
+      color: var(--brand);
+      font-size: clamp(1.6rem, 4vw, 2rem);
       font-weight: bold;
     }
     .tagline {
       margin: 10px 0 0 0;
-      font-size: 1.1em;
+      font-size: .95rem;
       opacity: 0.9;
     }
   `]

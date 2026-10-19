@@ -1,4 +1,5 @@
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { Component, DestroyRef, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
 import { FormsModule, NgForm } from '@angular/forms';
@@ -6,7 +7,7 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { ApiService, Category, Registration } from '../../services/api.service';
 
 /** Editable fields; numeric controls are empty until staff enter a value. */
-interface EventFormModel {
+export interface EventFormModel {
   latitude: number | null; longitude: number | null;
   event_name: string; event_date: string; event_time: string; event_address: string;
   event_purpose: string; event_description: string; event_ticket_price: number | null;
@@ -79,20 +80,20 @@ interface EventFormModel {
           <div class="field">
             <label for="event_description">Description *</label>
             <textarea id="event_description" name="event_description" class="textarea"
-                      [(ngModel)]="form.event_description" required maxlength="500" pattern=".*\\S.*"></textarea>
+                      [(ngModel)]="form.event_description" required maxlength="500" pattern="[\\s\\S]*\\S[\\s\\S]*"></textarea>
           </div>
 
           <div class="field-row">
             <div class="field">
               <label for="event_ticket_price">Ticket Price ($) *</label>
               <input id="event_ticket_price" name="event_ticket_price" class="input"
-                     type="number" step="0.01" min="0" max="99999999.99"
+                     type="number" step="0.01" min="0" max="99999999.99" pattern="[0-9]+(\\.[0-9]{1,2})?"
                      [(ngModel)]="form.event_ticket_price" required />
             </div>
             <div class="field">
               <label for="event_goal_amount">Goal Amount ($) *</label>
               <input id="event_goal_amount" name="event_goal_amount" class="input"
-                     type="number" step="0.01" min="0" max="99999999.99"
+                     type="number" step="0.01" min="0" max="99999999.99" pattern="[0-9]+(\\.[0-9]{1,2})?"
                      [(ngModel)]="form.event_goal_amount" required />
             </div>
           </div>
@@ -130,9 +131,10 @@ interface EventFormModel {
             </select>
           </div>
 
+          <p *ngIf="eventForm.invalid && eventForm.touched" class="error-text" role="alert">Complete the required fields. Amounts must be non-negative and use at most two decimal places.</p>
           <div class="form-actions">
             <button type="submit" class="btn-submit"
-                    [disabled]="eventForm.invalid || !coordinatesValid() || saving">
+                    [disabled]="eventForm.invalid || !coordinatesValid() || saving || !!successMessage">
               {{ saving ? 'Saving...' : (isEditMode ? 'Save Changes' : 'Create Event') }}
             </button>
             <a routerLink="/" class="btn-cancel">Cancel</a>
@@ -192,7 +194,7 @@ interface EventFormModel {
       margin: 0 auto;
     }
     .back-link {
-      color: #3498db;
+      color: var(--brand);
       text-decoration: none;
       font-weight: 600;
       font-size: 0.9rem;
@@ -201,7 +203,7 @@ interface EventFormModel {
       text-decoration: underline;
     }
     h1 {
-      color: #2c3e50;
+      color: var(--dark);
       font-size: 1.6rem;
       margin: 12px 0 20px;
     }
@@ -213,21 +215,21 @@ interface EventFormModel {
     }
     .alert-error {
       background-color: #fdecea;
-      border-color: #c0392b;
+      border-color: var(--brand-dark);
       color: #8b2a21;
     }
     .alert-success {
       background-color: #eafaf1;
-      border-color: #27ae60;
+      border-color: var(--success);
       color: #1d7a45;
     }
     .loading {
       text-align: center;
       padding: 60px 20px;
-      color: #7f8c8d;
+      color: var(--muted);
     }
     .form-card, .registration-card {
-      background: #ffffff;
+      background: var(--surface);
       border-radius: 10px;
       box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
       padding: 28px;
@@ -237,7 +239,7 @@ interface EventFormModel {
     }
     .registration-card h2 {
       margin: 0 0 16px;
-      color: #2c3e50;
+      color: var(--dark);
       font-size: 1.25rem;
     }
     .registrations-table-wrapper {
@@ -256,10 +258,10 @@ interface EventFormModel {
     }
     .registrations-table th {
       background-color: #f5f7f9;
-      color: #2c3e50;
+      color: var(--dark);
     }
     .btn-retry {
-      background-color: #3498db;
+      background-color: var(--brand);
       color: #ffffff;
       border: none;
       border-radius: 5px;
@@ -281,21 +283,21 @@ interface EventFormModel {
       margin-bottom: 6px;
       font-size: 0.9rem;
       font-weight: 600;
-      color: #2c3e50;
+      color: var(--dark);
     }
     .input, .select, .textarea {
       width: 100%;
       padding: 11px 12px;
       border: 1px solid #cfd6dc;
       border-radius: 6px;
-      background-color: #ffffff;
+      background-color: var(--surface);
       color: #333333;
       font: inherit;
       box-sizing: border-box;
     }
     .input:focus, .select:focus, .textarea:focus {
       outline: 2px solid rgba(52, 152, 219, 0.35);
-      border-color: #3498db;
+      border-color: var(--brand);
     }
     .textarea {
       min-height: 110px;
@@ -308,7 +310,7 @@ interface EventFormModel {
       margin-top: 8px;
     }
     .btn-submit {
-      background-color: #27ae60;
+      background-color: var(--success);
       color: #ffffff;
       border: none;
       padding: 11px 26px;
@@ -319,19 +321,19 @@ interface EventFormModel {
       transition: background-color 0.2s;
     }
     .btn-submit:hover:not(:disabled) {
-      background-color: #1e8449;
+      background-color: var(--brand-dark);
     }
     .btn-submit:disabled {
       opacity: 0.6;
       cursor: not-allowed;
     }
     .btn-cancel {
-      color: #7f8c8d;
+      color: var(--muted);
       text-decoration: none;
       font-weight: 600;
     }
     .btn-cancel:hover {
-      color: #2c3e50;
+      color: var(--dark);
     }
   `]
 })
@@ -372,7 +374,7 @@ export class EventForm implements OnInit {
     event_availability: 'Available'
   };
 
-  constructor(
+  constructor(private destroyRef: DestroyRef, 
     private apiService: ApiService,
     private route: ActivatedRoute,
     private router: Router,
@@ -399,7 +401,7 @@ export class EventForm implements OnInit {
    * @returns void
    */
   loadCategories(): void {
-    this.apiService.getCategories().subscribe({
+    this.apiService.getCategories().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (data) => {
         this.categories = data;
         this.cdr.detectChanges();
@@ -424,7 +426,7 @@ export class EventForm implements OnInit {
     this.loadingEvent = true;
     this.eventLoaded = false;
 
-    this.apiService.getEvent(id).subscribe({
+    this.apiService.getEvent(id).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (event) => {
         this.form = {
           latitude: event.latitude ?? null, longitude: event.longitude ?? null,
@@ -464,7 +466,7 @@ export class EventForm implements OnInit {
     this.registrationError = null;
     this.registrations = [];
 
-    this.apiService.getEventRegistrations(eventId).subscribe({
+    this.apiService.getEventRegistrations(eventId).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (registrations) => {
         this.registrations = registrations;
         this.loadingRegistrations = false;
@@ -487,7 +489,7 @@ export class EventForm implements OnInit {
    */
   onSubmit(eventForm: NgForm): void {
     eventForm.control.markAllAsTouched();
-    if (eventForm.invalid || !this.coordinatesValid() || this.saving) {
+    if (eventForm.invalid || !this.coordinatesValid() || this.saving || this.successMessage) {
       return;
     }
     this.saving = true;
@@ -497,7 +499,7 @@ export class EventForm implements OnInit {
     if (this.isEditMode && this.eventId !== null) {
       const payload = { ...this.form, event_ticket_price: Number(this.form.event_ticket_price),
         event_goal_amount: Number(this.form.event_goal_amount), event_category_id: Number(this.form.event_category_id) };
-      this.apiService.updateEvent(this.eventId, payload).subscribe({
+      this.apiService.updateEvent(this.eventId, payload).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
         next: () => this.handleSuccess('Event updated successfully.'),
         error: (err) => this.handleError(err)
       });
@@ -505,7 +507,7 @@ export class EventForm implements OnInit {
       // The backend defaults availability to 'Available' on creation.
       const { event_availability, ...payload } = this.form;
       this.apiService.createEvent({ ...payload, event_ticket_price: Number(payload.event_ticket_price),
-        event_goal_amount: Number(payload.event_goal_amount), event_category_id: Number(payload.event_category_id) }).subscribe({
+        event_goal_amount: Number(payload.event_goal_amount), event_category_id: Number(payload.event_category_id) }).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
         next: () => this.handleSuccess('Event created successfully.'),
         error: (err) => this.handleError(err)
       });
@@ -521,9 +523,10 @@ export class EventForm implements OnInit {
     this.saving = false;
     this.successMessage = message;
     this.cdr.detectChanges();
-    setTimeout(() => {
+    const redirectTimer = setTimeout(() => {
       this.router.navigate(['/']);
     }, 1000);
+    this.destroyRef.onDestroy(() => clearTimeout(redirectTimer));
   }
 
   /**

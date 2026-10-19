@@ -1,5 +1,6 @@
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
-import { dayOfMonth, monthAbbr, formatDateShort, formatDateTime, formatTime, formatMoney } from '../../shared/format';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { Component, DestroyRef, OnInit, ChangeDetectorRef } from '@angular/core';
+import { dayOfMonth, monthAbbr, formatDateShort, formatDateTime, formatTime, formatMoney, isPastDate } from '../../shared/format';
 import { WeatherPanel } from '../../components/weather-panel/weather-panel';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterLink } from '@angular/router';
@@ -45,19 +46,19 @@ import { ApiService, Event, Registration } from '../../services/api.service';
 
           <div class="detail-body">
             <div class="info-row">
-              <span class="info-label">📅 Date</span>
+              <span class="info-label">Date</span>
               <span>{{ formatDate(event.event_date) }}</span>
             </div>
             <div class="info-row">
-              <span class="info-label">🕐 Time</span>
+              <span class="info-label">Time</span>
               <span>{{ formatTime(event.event_time) }}</span>
             </div>
             <div class="info-row">
-              <span class="info-label">📍 Location</span>
+              <span class="info-label">Location</span>
               <span>{{ event.event_address }}</span>
             </div>
             <div class="info-row">
-              <span class="info-label">🎫 Ticket Price</span>
+              <span class="info-label">Ticket Price</span>
               <span *ngIf="event.event_ticket_price > 0">{{ event.event_ticket_price | currency:'AUD':'symbol':'1.2-2' }}</span>
               <span *ngIf="event.event_ticket_price === 0" class="free-text">FREE</span>
             </div>
@@ -81,7 +82,8 @@ import { ApiService, Event, Registration } from '../../services/api.service';
               </p>
             </div>
 
-            <a [routerLink]="['/register', event.event_id]" class="btn-register">Register Now</a>
+            <a *ngIf="!registrationClosed()" [routerLink]="['/register', event.event_id]" class="btn-register">Register Now</a>
+            <p *ngIf="registrationClosed()" class="alert alert-info">Registration is closed because this event has already taken place.</p>
           </div>
         </div>
 
@@ -120,13 +122,13 @@ import { ApiService, Event, Registration } from '../../services/api.service';
     .loading, .error-message {
       text-align: center;
       padding: 40px;
-      color: #7f8c8d;
+      color: var(--muted);
     }
     .error-message {
-      color: #e74c3c;
+      color: var(--brand);
     }
     .link-back {
-      color: #3498db;
+      color: var(--brand);
       text-decoration: none;
       font-size: 0.95em;
       display: inline-block;
@@ -151,7 +153,7 @@ import { ApiService, Event, Registration } from '../../services/api.service';
       border-bottom: 1px solid #f5d5d0;
     }
     .event-date-badge {
-      background: linear-gradient(135deg, #e74c3c, #c0392b);
+      background: linear-gradient(135deg, var(--brand), var(--brand-dark));
       color: white;
       padding: 20px 18px;
       text-align: center;
@@ -172,8 +174,8 @@ import { ApiService, Event, Registration } from '../../services/api.service';
       margin-top: 5px;
     }
     .category-tag {
-      background-color: #ecf0f1;
-      color: #7f8c8d;
+      background-color: var(--brand-soft);
+      color: var(--muted);
       padding: 4px 10px;
       border-radius: 15px;
       font-size: 0.8em;
@@ -181,10 +183,10 @@ import { ApiService, Event, Registration } from '../../services/api.service';
     }
     .detail-title h2 {
       margin: 8px 0 5px;
-      color: #2c3e50;
+      color: var(--dark);
     }
     .event-purpose {
-      color: #7f8c8d;
+      color: var(--muted);
       margin: 0;
     }
     .detail-body {
@@ -198,18 +200,18 @@ import { ApiService, Event, Registration } from '../../services/api.service';
     }
     .info-label {
       font-weight: bold;
-      color: #2c3e50;
+      color: var(--dark);
       min-width: 140px;
     }
     .free-text {
-      color: #e74c3c;
+      color: var(--brand);
       font-weight: bold;
     }
     .description-section {
       margin: 20px 0;
     }
     .description-section h3, .progress-section h3 {
-      color: #2c3e50;
+      color: var(--dark);
       margin-bottom: 10px;
     }
     .description-section p {
@@ -220,24 +222,24 @@ import { ApiService, Event, Registration } from '../../services/api.service';
       margin: 20px 0;
     }
     .progress-bar {
-      background-color: #ecf0f1;
+      background-color: var(--brand-soft);
       border-radius: 10px;
       height: 20px;
       overflow: hidden;
     }
     .progress-fill {
-      background: linear-gradient(90deg, #27ae60, #2ecc71);
+      background: linear-gradient(90deg, var(--success), var(--dark-soft));
       height: 100%;
       transition: width 0.5s ease;
     }
     .progress-text {
-      color: #7f8c8d;
+      color: var(--muted);
       font-size: 0.95em;
       margin-top: 8px;
     }
     .btn-register {
       display: inline-block;
-      background-color: #e74c3c;
+      background-color: var(--brand);
       color: white;
       text-decoration: none;
       padding: 14px 40px;
@@ -248,11 +250,11 @@ import { ApiService, Event, Registration } from '../../services/api.service';
       transition: background-color 0.3s;
     }
     .btn-register:hover {
-      background-color: #c0392b;
+      background-color: var(--brand-dark);
     }
     .btn-back {
       display: inline-block;
-      background-color: #3498db;
+      background-color: var(--brand);
       color: white;
       text-decoration: none;
       padding: 10px 25px;
@@ -266,11 +268,11 @@ import { ApiService, Event, Registration } from '../../services/api.service';
       padding: 25px;
     }
     .registrations-section h3 {
-      color: #2c3e50;
+      color: var(--dark);
       margin-top: 0;
     }
     .no-registrations {
-      color: #7f8c8d;
+      color: var(--muted);
     }
     .registrations-table {
       width: 100%;
@@ -280,12 +282,12 @@ import { ApiService, Event, Registration } from '../../services/api.service';
       text-align: left;
       padding: 10px;
       background-color: #f8f9fa;
-      color: #2c3e50;
-      border-bottom: 2px solid #ecf0f1;
+      color: var(--dark);
+      border-bottom: 2px solid var(--brand-soft);
     }
     .registrations-table td {
       padding: 10px;
-      border-bottom: 1px solid #ecf0f1;
+      border-bottom: 1px solid var(--brand-soft);
       color: #555;
     }
   `]
@@ -296,7 +298,7 @@ export class EventDetail implements OnInit {
   loading = true;
   error: string | null = null;
 
-  constructor(
+  constructor(private destroyRef: DestroyRef, 
     private route: ActivatedRoute,
     private apiService: ApiService,
     private cdr: ChangeDetectorRef
@@ -314,7 +316,7 @@ export class EventDetail implements OnInit {
       return;
     }
 
-    this.apiService.getEvent(id).subscribe({
+    this.apiService.getEvent(id).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (data) => {
         this.event = data;
         this.registrations = data.registrations;
@@ -383,4 +385,10 @@ export class EventDetail implements OnInit {
    * @returns A readable date and time, or an empty string.
    */
   formatRegistrationDate(value: string): string { return formatDateTime(value); }
+
+  /**
+   * Prevent a past event from advertising an open registration form.
+   * @returns Whether the loaded event is in the past.
+   */
+  registrationClosed(): boolean { return !!this.event && isPastDate(this.event.event_date); }
 }

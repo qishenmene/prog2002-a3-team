@@ -1,4 +1,5 @@
-import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { Component, DestroyRef, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -80,7 +81,7 @@ export class Search implements OnInit, OnDestroy {
   private routeSubscription?: Subscription;
   private searchSubscription?: Subscription;
 
-  constructor(private apiService: ApiService, private cdr: ChangeDetectorRef,
+  constructor(private destroyRef: DestroyRef, private apiService: ApiService, private cdr: ChangeDetectorRef,
               private route: ActivatedRoute, private router: Router) {}
 
   /**
@@ -115,7 +116,7 @@ export class Search implements OnInit, OnDestroy {
    */
   loadCategories(): void {
     this.categoryError = null;
-    this.apiService.getCategories().subscribe({
+    this.apiService.getCategories().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: data => { this.categories = data; this.cdr.detectChanges(); },
       error: err => { this.categoryError = errorMessage(err, 'Unable to load categories.'); this.cdr.detectChanges(); }
     });
@@ -140,7 +141,7 @@ export class Search implements OnInit, OnDestroy {
   private loadResults(): void {
     this.searchSubscription?.unsubscribe();
     this.loading = true; this.error = null;
-    this.searchSubscription = this.apiService.searchEvents(this.searchParams()).subscribe({
+    this.searchSubscription = this.apiService.searchEvents(this.searchParams()).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: data => { this.events = data; this.loading = false; this.searched = true; this.cdr.detectChanges(); },
       error: err => { this.error = errorMessage(err, 'Search failed. Please try again.'); this.loading = false; this.cdr.detectChanges(); }
     });

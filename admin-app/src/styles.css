@@ -1,1 +1,25 @@
-/* You can add global styles to this file, and also import other style files */
+/* Shared colours continue the cream, green and terracotta palette of A2. */
+:root {
+  --brand: #28513e; --brand-dark: #193a2b; --brand-soft: #e5ece5;
+  --accent: #b65045; --dark: #244333; --dark-soft: #365c48;
+  --text: #333333; --muted: #625d57; --border: #ddd5ca;
+  --surface: #fffdf9; --page: #f6f1e8; --success: #28513e;
+  --warning: #996112; --danger: #a6372f; --radius: 8px;
+  --shadow: 0 3px 14px rgba(40, 60, 45, .06); --shadow-lg: 0 10px 24px rgba(40, 60, 45, .12);
+}
+
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--page); color: var(--text); font-family: Arial, Helvetica, sans-serif; line-height: 1.6; }
+button, input, select, textarea { font: inherit; }
+:focus-visible { outline: 3px solid var(--accent); outline-offset: 4px; }
+button:disabled { opacity: .55; cursor: not-allowed; }
+.error-text { color: var(--danger); }
+p, td, h1, h2 { overflow-wrap: anywhere; }
+fieldset { border: 1px solid var(--border); border-radius: 6px; padding: 18px; margin: 0 0 24px; }
+legend { color: var(--dark); font-weight: 600; }
+@media (max-width: 600px) {
+  .field-row, .page-header { flex-direction: column; align-items: stretch !important; }
+  .field-row { gap: 0 !important; }
+  .form-actions { flex-wrap: wrap; }
+}
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }

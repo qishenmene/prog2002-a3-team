@@ -9,9 +9,9 @@ import { Register } from './pages/register/register';
  * Defines all page routes for the client application
  */
 export const routes: Routes = [
-  { path: '', component: Home },
-  { path: 'search', component: Search },
-  { path: 'event/:id', component: EventDetail },
-  { path: 'register/:id', component: Register },
+  { path: '', component: Home, title: 'Home | Students Helper' },
+  { path: 'search', component: Search, title: 'Search Events | Students Helper' },
+  { path: 'event/:id', component: EventDetail, title: 'Event Details | Students Helper' },
+  { path: 'register/:id', component: Register, title: 'Register | Students Helper' },
   { path: '**', redirectTo: '' }
 ];

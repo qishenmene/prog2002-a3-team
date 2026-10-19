@@ -18,7 +18,7 @@ import { Component } from '@angular/core';
   `,
   styles: [`
     .footer {
-      background-color: #2c3e50;
+      background-color: var(--dark);
       color: white;
       text-align: center;
       padding: 20px;

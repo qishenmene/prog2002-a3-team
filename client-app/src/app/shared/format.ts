@@ -35,7 +35,7 @@ export function parseSqlDate(value: string | null | undefined): Date | null {
     return null;
   }
 
-  return new Date(
+  const date = new Date(
     Number(match[1]),
     Number(match[2]) - 1,
     Number(match[3]),
@@ -43,6 +43,10 @@ export function parseSqlDate(value: string | null | undefined): Date | null {
     Number(match[5] || 0),
     Number(match[6] || 0)
   );
+  if (date.getFullYear() !== Number(match[1]) || date.getMonth() !== Number(match[2]) - 1 ||
+      date.getDate() !== Number(match[3]) || date.getHours() !== Number(match[4] || 0) ||
+      date.getMinutes() !== Number(match[5] || 0) || date.getSeconds() !== Number(match[6] || 0)) return null;
+  return date;
 }
 
 /**
@@ -172,5 +176,19 @@ export function truncate(text: string, maxLength: number): string {
 export function formatMoney(value: number | string | null | undefined): string {
   const amount = Number(value || 0);
 
-  return '$' + amount.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  return 'A$' + amount.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+}
+
+/**
+ * Check an event's calendar date against the Queensland date used by the case study.
+ * @param value - The event date returned by MySQL.
+ * @returns Whether the event date is before today or is invalid.
+ */
+export function isPastDate(value: string): boolean {
+  const date = parseSqlDate(value);
+  if (!date) return true;
+  const parts = new Intl.DateTimeFormat('en-CA', { timeZone: 'Australia/Brisbane', year: 'numeric', month: '2-digit', day: '2-digit' }).formatToParts(new Date());
+  const part = (type: string) => parts.find(item => item.type === type)!.value;
+  const today = part('year') + '-' + part('month') + '-' + part('day');
+  return value.slice(0, 10) < today;
 }

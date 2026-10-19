@@ -1,4 +1,5 @@
-import { Component, Input, OnChanges, OnDestroy, ChangeDetectorRef } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { Component, DestroyRef, Input, OnChanges, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Subscription } from 'rxjs';
 import { ApiService, EventWeather } from '../../services/api.service';
@@ -39,7 +40,7 @@ export class WeatherPanel implements OnChanges, OnDestroy {
   loading = false;
   error: string | null = null;
   private request?: Subscription;
-  constructor(private api: ApiService, private cdr: ChangeDetectorRef) {}
+  constructor(private destroyRef: DestroyRef, private api: ApiService, private cdr: ChangeDetectorRef) {}
 
   /**
    * Refresh the forecast when the event input changes.
@@ -60,7 +61,7 @@ export class WeatherPanel implements OnChanges, OnDestroy {
   loadWeather(): void {
     this.request?.unsubscribe();
     this.loading = true; this.error = null; this.weather = null;
-    this.request = this.api.getEventWeather(this.eventId).subscribe({
+    this.request = this.api.getEventWeather(this.eventId).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: weather => { this.weather = weather; this.loading = false; this.cdr.detectChanges(); },
       error: err => { this.error = errorMessage(err, 'Unable to load the forecast.'); this.loading = false; this.cdr.detectChanges(); }
     });

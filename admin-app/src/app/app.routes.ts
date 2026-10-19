@@ -9,8 +9,8 @@ import { EventForm } from './pages/event-form/event-form';
  * 'edit/:id'-> edit event form
  */
 export const routes: Routes = [
-  { path: '', component: EventList },
-  { path: 'create', component: EventForm },
-  { path: 'edit/:id', component: EventForm },
+  { path: '', component: EventList, title: 'Manage Events | Students Helper' },
+  { path: 'create', component: EventForm, title: 'Event Form | Students Helper' },
+  { path: 'edit/:id', component: EventForm, title: 'Event Form | Students Helper' },
   { path: '**', redirectTo: '' }
 ];
