@@ -49,7 +49,7 @@ import { ApiService, Event } from '../../services/api.service';
         <!-- Registration form -->
         <div class="form-card" *ngIf="!submitted">
           <h3>Register for This Event</h3>
-          <p class="helper-text">We will send confirmation to your email.</p>
+          <p class="helper-text">Enter your details to complete your registration.</p>
 
           <!-- Server error message -->
           <div *ngIf="submitError" class="server-error">
@@ -136,7 +136,7 @@ import { ApiService, Event } from '../../services/api.service';
             Thank you, <strong>{{ form.user_name }}</strong>! Your registration for
             <strong>{{ event.event_name }}</strong> is confirmed.
           </p>
-          <p>A confirmation will be sent to <strong>{{ form.user_email }}</strong>.</p>
+          <p>Registered email: <strong>{{ form.user_email }}</strong>.</p>
           <div class="success-actions">
             <a [routerLink]="['/event', event.event_id]" class="btn-secondary">Back to Event</a>
             <a routerLink="/" class="btn-secondary">Back to Home</a>
@@ -349,7 +349,8 @@ export class Register implements OnInit {
   ) {}
 
   /**
-   * Load the event summary using the :id route parameter
+   * Load the event summary using the route's event ID.
+   * @returns Nothing; the subscription updates the event or loading error.
    */
   ngOnInit(): void {
     const id = Number(this.route.snapshot.paramMap.get('id'));
@@ -378,7 +379,8 @@ export class Register implements OnInit {
 
   /**
    * Submit the registration to the API.
-   * Displays the server error message (e.g. duplicate email) on failure.
+   * Displays confirmation after saving, or the server error on failure.
+   * @returns Nothing; the subscription updates the submission state.
    */
   submit(): void {
     if (!this.event) return;
@@ -408,14 +410,18 @@ export class Register implements OnInit {
   }
 
   /**
-   * Extract day number from date string
+   * Extract the day number from an event date.
+   * @param dateString - The date value returned by the API.
+   * @returns The local day of the month as a string.
    */
   getDay(dateString: string): string {
     return new Date(dateString).getDate().toString();
   }
 
   /**
-   * Extract month abbreviation from date string
+   * Extract the month abbreviation from an event date.
+   * @param dateString - The date value returned by the API.
+   * @returns The uppercase three-letter month abbreviation.
    */
   getMonth(dateString: string): string {
     const months = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
@@ -423,7 +429,9 @@ export class Register implements OnInit {
   }
 
   /**
-   * Format a date string as "18 Oct 2026"
+   * Format a date string as "18 OCT 2026".
+   * @param dateString - The event date returned by the API.
+   * @returns The formatted date, or an empty string when no date is supplied.
    */
   formatDate(dateString: string): string {
     if (!dateString) return '';
@@ -432,7 +440,9 @@ export class Register implements OnInit {
   }
 
   /**
-   * Format time string for display
+   * Format a database time for display in the registration summary.
+   * @param timeString - A time in HH:MM or HH:MM:SS format.
+   * @returns A twelve-hour time with AM or PM, or an empty string for no time.
    */
   formatTime(timeString: string): string {
     if (!timeString) return '';
