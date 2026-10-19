@@ -9,6 +9,7 @@
  */
 const eventDb = require("./event_db");
 const express = require("express");
+const { positiveId, validDate, validateEvent, queenslandToday } = require("./event-validation");
 
 const connectionObj = eventDb.getConnection();
 connectionObj.connect();
@@ -23,7 +24,8 @@ const router = express.Router();
  */
 router.get("/events", function (req, res) {
     connectionObj.query(
-        "SELECT * FROM events JOIN categories ON events.event_category_id = categories.category_id WHERE event_date >= CURDATE() AND event_availability = 'Available';",
+        "SELECT * FROM events JOIN categories ON events.event_category_id = categories.category_id WHERE event_date >= ? AND event_availability = 'Available' ORDER BY event_date, event_time, event_id;",
+        [queenslandToday()],
         function (err, results) {
             if (err) {
                 console.log(err);
@@ -67,8 +69,13 @@ router.get("/events/search", function (req, res) {
     const date = req.query.date;
     const location = req.query.location;
     const category = req.query.category;
+    if ((date !== undefined && !validDate(date)) ||
+        (location !== undefined && (typeof location !== "string" || location.length > 150)) ||
+        (category !== undefined && !positiveId(category))) {
+        return res.status(400).json({ message: "Please provide a valid date, location and category filter." });
+    }
     const conditions = [];
-    const values = [];
+    const values = [queenslandToday()];
     if (date) {
         conditions.push("event_date = ?");
         values.push(date);
@@ -83,12 +90,12 @@ router.get("/events/search", function (req, res) {
     }
 
     const conditionSQL = conditions.join(" AND ");
-    let sql = "SELECT * FROM events JOIN categories ON events.event_category_id = categories.category_id WHERE event_availability = 'Available' AND event_date >= CURDATE()";
+    let sql = "SELECT * FROM events JOIN categories ON events.event_category_id = categories.category_id WHERE event_availability = 'Available' AND event_date >= ?";
     if (conditions.length > 0) {
         sql = sql + " AND " + conditionSQL;
     }
     connectionObj.query(
-        sql,
+        sql + " ORDER BY event_date, event_time, event_id",
         values,
         function (err, results) {
             if (err) {
@@ -221,9 +228,12 @@ router.get("/events/:id", getEventDetails);
  * @param {Object} res The HTTP response object used to send data back to the client.
  */
 router.get("/events/:id/registrations", function (req, res) {
-    const eventId = req.params.id;
+    const eventId = positiveId(req.params.id);
+    if (!eventId) {
+        return res.status(400).json({ message: "Event ID must be a positive integer." });
+    }
     connectionObj.query(
-        "SELECT * FROM registrations WHERE event_id = ? ORDER BY registration_date DESC",
+        "SELECT * FROM registrations WHERE event_id = ? ORDER BY registration_date DESC, registration_id DESC",
         [eventId],
         function (err, results) {
             if (err) {
@@ -244,14 +254,10 @@ router.get("/events/:id/registrations", function (req, res) {
  * @param {Object} res The HTTP response object used to send data back to the client.
  */
 router.post("/events", function (req, res) {
-    const { event_name, event_date, event_time, event_address, event_purpose, event_description, event_ticket_price, event_goal_amount, event_category_id, event_organisation_id } = req.body;
-
-    // Validation
-    if (!event_name || !event_date || !event_time || !event_address || !event_category_id) {
-        return res.status(400).json({
-            message: "Missing required fields: event_name, event_date, event_time, event_address, event_category_id"
-        });
-    }
+    const checked = validateEvent(req.body, false);
+    if (checked.error) return res.status(400).json({ message: checked.error });
+    const { event_name, event_date, event_time, event_address, event_purpose, event_description,
+        event_ticket_price, event_goal_amount, event_category_id, event_organisation_id } = checked.value;
 
     const sql = `INSERT INTO events (event_name, event_date, event_time, event_address, event_purpose, event_description, event_ticket_price, event_goal_amount, event_goal_raised_amount, event_category_id, event_organisation_id, event_availability)
                  VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0, ?, ?, 'Available')`;
@@ -261,6 +267,9 @@ router.post("/events", function (req, res) {
         [event_name, event_date, event_time, event_address, event_purpose, event_description, event_ticket_price, event_goal_amount, event_category_id, event_organisation_id || 1],
         function (err, result) {
             if (err) {
+                if (err.code === "ER_NO_REFERENCED_ROW_2") {
+                    return res.status(400).json({ message: "The selected category or organisation does not exist." });
+                }
                 console.log(err);
                 return res.status(500).json({
                     message: "Failed to create event. Please check your input and try again."
@@ -281,8 +290,14 @@ router.post("/events", function (req, res) {
  * @param {Object} res The HTTP response object used to send data back to the client.
  */
 router.put("/events/:id", function (req, res) {
-    const eventId = req.params.id;
-    const { event_name, event_date, event_time, event_address, event_purpose, event_description, event_ticket_price, event_goal_amount, event_category_id, event_availability } = req.body;
+    const eventId = positiveId(req.params.id);
+    if (!eventId) {
+        return res.status(400).json({ message: "Event ID must be a positive integer." });
+    }
+    const checked = validateEvent(req.body, true);
+    if (checked.error) return res.status(400).json({ message: checked.error });
+    const { event_name, event_date, event_time, event_address, event_purpose, event_description,
+        event_ticket_price, event_goal_amount, event_category_id, event_availability } = checked.value;
 
     const sql = `UPDATE events SET event_name=?, event_date=?, event_time=?, event_address=?, event_purpose=?, event_description=?, event_ticket_price=?, event_goal_amount=?, event_category_id=?, event_availability=? WHERE event_id=?`;
 
@@ -291,6 +306,9 @@ router.put("/events/:id", function (req, res) {
         [event_name, event_date, event_time, event_address, event_purpose, event_description, event_ticket_price, event_goal_amount, event_category_id, event_availability, eventId],
         function (err, result) {
             if (err) {
+                if (err.code === "ER_NO_REFERENCED_ROW_2") {
+                    return res.status(400).json({ message: "The selected category or organisation does not exist." });
+                }
                 console.log(err);
                 return res.status(500).json({
                     message: "Failed to update event. Please try again later."
@@ -316,7 +334,10 @@ router.put("/events/:id", function (req, res) {
  * @param {Object} res The HTTP response object used to send data back to the client.
  */
 router.delete("/events/:id", function (req, res) {
-    const eventId = req.params.id;
+    const eventId = positiveId(req.params.id);
+    if (!eventId) {
+        return res.status(400).json({ message: "Event ID must be a positive integer." });
+    }
 
     // First check if event has registrations
     connectionObj.query(
@@ -332,7 +353,7 @@ router.delete("/events/:id", function (req, res) {
 
             if (results[0].count > 0) {
                 return res.status(400).json({
-                    message: `Cannot delete event. It has ${results[0].count} registration(s). Please remove all registrations first.`
+                    message: `Cannot delete event. It has ${results[0].count} registration(s). An event with registrations must be kept for its attendees.`
                 });
             }
 
@@ -342,6 +363,9 @@ router.delete("/events/:id", function (req, res) {
                 [eventId],
                 function (err, result) {
                     if (err) {
+                        if (err.code === "ER_ROW_IS_REFERENCED_2") {
+                            return res.status(400).json({ message: "This event has registrations and cannot be deleted." });
+                        }
                         console.log(err);
                         return res.status(500).json({
                             message: "Failed to delete event. Please try again later."
@@ -404,8 +428,8 @@ function createRegistration(req, res) {
     const phone = user_phone == null ? null : user_phone.trim() || null;
 
     connectionObj.query(
-        "SELECT event_availability FROM events WHERE event_id = ?",
-        [eventId],
+        "SELECT event_availability, event_date < ? AS is_past FROM events WHERE event_id = ?",
+        [queenslandToday(), eventId],
         function (eventError, events) {
             if (eventError) {
                 console.error(eventError);
@@ -416,17 +440,17 @@ function createRegistration(req, res) {
                 res.status(404).json({ message: "Event not found." });
                 return;
             }
-            if (events[0].event_availability !== "Available") {
+            if (events[0].event_availability !== "Available" || events[0].is_past) {
                 res.status(409).json({ message: "This event is not available for registration." });
                 return;
             }
 
             const sql = `INSERT INTO registrations (event_id, user_name, user_email, user_phone, num_tickets)
                          SELECT event_id, ?, ?, ?, ? FROM events
-                         WHERE event_id = ? AND event_availability = 'Available'`;
+                         WHERE event_id = ? AND event_availability = 'Available' AND event_date >= ?`;
             connectionObj.query(
                 sql,
-                [name, email, phone, tickets, eventId],
+                [name, email, phone, tickets, eventId, queenslandToday()],
                 function (insertError, result) {
                     if (insertError) {
                         if (insertError.code === "ER_DUP_ENTRY") {

@@ -59,7 +59,7 @@ app.use(function (req, res, next) {
     next();
 });
 
-// Small request logger - useful when demonstrating the API in the video.
+// Log the request method and path.
 app.use(function (req, res, next) {
     console.log(req.method + " " + req.originalUrl);
     next();
@@ -117,8 +117,14 @@ app.use("/api", function (req, res) {
     });
 });
 
-// Central error handler so an unexpected exception never crashes the app.
+// Return JSON responses for body parsing errors and request failures.
 app.use(function (err, req, res, next) {
+    if (err.type === "entity.parse.failed") {
+        return res.status(400).json({ message: "The request body must contain valid JSON." });
+    }
+    if (err.type === "entity.too.large") {
+        return res.status(413).json({ message: "The request body is too large." });
+    }
     console.error(err);
     res.status(500).json({
         message: "Oops, something went wrong on the server. Please try again later."
